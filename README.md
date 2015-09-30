@@ -1,2 +1,2 @@
-# rangefinder
-An API spec to define how to find DOM ranges from basic information 
+# findtext
+ An API spec to define how to find text in a Web document, using basic information, and return DOM ranges. 
