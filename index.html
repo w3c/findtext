@@ -247,6 +247,24 @@
         </dd>
 
         <dt>
+          <dfn id="search_index">search index</dfn>
+        </dt>
+        <dd>
+          The <a>search index</a> is the character position of the <a>search operation</a> in the <a>search content</a>.
+
+          <p class="issue">
+            Should <a>search index</a> be exposed as a property of the <a>FindText</a> interface? That might allow more fine-grained control of the interface, and provide a way to detect the current search progress state (which might mean also exposing the total character length of the <a>search content</a>).
+          </p>
+        </dd>
+
+        <dt>
+          <dfn id="search_operation">search operation</dfn>
+        </dt>
+        <dd>
+          The <a>search operation</a> is the current execution of the <a class="idlType" href="#widl-FindText-search-Promise-FindTextResult--boolean-forward"><code>search</code></a> method of the <a>FindText</a> interface.
+        </dd>
+
+        <dt>
           <dfn id="edit_distance">edit distance</dfn>
         </dt>
         <dd>
@@ -460,7 +478,7 @@
           </dt>
           <dd>
             <p>
-              A boolean representing whether a search MUST begin again at the beginning (or end, depending on search direction) of the search tree. The default value MUST be false.
+              A boolean representing whether a search MUST begin again at the beginning (or end, depending on search direction) of the <a>search tree</a>. The default value MUST be false.
             </p>
           </dd>
           <dt>
@@ -481,7 +499,7 @@
             </ul>
 
             <p class="issue">
-              TODO: Add algorithm that describes the search operation, the setting of the search index position, evaluation of each search criterion, and so on. Maybe that's in a later section of the spec?
+              TODO: Add algorithm that describes the <a>search operation</a>, the setting of the <a>search</a> index position, evaluation of each search criterion, and so on. Maybe that's in a later section of the spec?
             </p>
 
             <dl class="parameters">
@@ -490,13 +508,13 @@
               </dt>
               <dd>
                 <p>
-                  This parameter indicates whether the search should proceed in forward (positive) direction from the last index, or in a reverse (negative) direction. The default value MUST be true.
+                  This parameter indicates whether the search should proceed in forward (positive) direction from the current <a>search index</a>, or in a reverse (negative) direction. The default value MUST be true.
                 </p>
                 <p>
-                  If the value is <code>true</code>, the search MUST continue in a positive direction along the character or DOM serialization, from the start of the document toward the end, beginning at the index of the last search.
+                  If the value is <code>true</code>, the search MUST continue in a positive direction along the character or DOM serialization, from the start of the document toward the end, beginning at the current <a>search index</a>.
                 </p>
                 <p>
-                  If the value is <code>false</code>, the search MUST continue in a negative direction along the character or DOM serialization, from the end of the document toward the start, beginning at the index of the last search.
+                  If the value is <code>false</code>, the search MUST continue in a negative direction along the character or DOM serialization, from the end of the document toward the start, beginning at the current <a>search index</a>.
                 </p>
               </dd>
             </dl>  
@@ -697,6 +715,9 @@
         initially set to <code>null</code>, which is a <a>Promise</a> object
         whose associated operation is to search the document.
       </p>
+      <p>
+        When <a title="queue a task">queuing a task</a>, the <dfn>find text task source</dfn> is used.
+      </p>    
     </section>
 
     <section>
@@ -755,8 +776,8 @@
                 <code>DOMException</code> whose name is
                 <code>AbortError</code>.
                 </li>
-                <li>Set <var>doc</var>'s <a>pending promise</a> to
-                <code>null</code> .
+                <li>Set <var>doc</var>'s <a>pending promise</a> to 
+                <code>null</code>.
                 </li>
               </ol>
             </li>
