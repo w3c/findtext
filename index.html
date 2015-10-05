@@ -102,6 +102,12 @@
       <p>
         The result of a FindText search is an object that contains the found range, any additional addressing characteristics, and a confidence interval to indicate how closely the search result matches the various selection criteria. By running a search multiple times and comparing the confidence interval for each result, a script can determine the best match for that set of search criteria. A script can also add or subtract selectors based on the results and confidence interval to refine a search.
       </p>
+
+
+      <p class="note">
+        This specification defines the behavior for documents using a Unicode character encoding, such as UTF-8. Behavior for documents using legacy character encoding, such as <code>windows-1252</code>, may be anomolous.
+      </p>
+      
       <p class="issue">
         Should the return object also contain the CSS and/or XPath selector that is the closest match for the selection? Can you get that easily from another Web Platform feature?
       </p>
@@ -113,6 +119,13 @@
         For character counts in ranges, what exactly would be counted as a character? Unicode code points? Graphemes?
       </p>
 
+      <p class="issue">
+        Address the issue of multiple concurrent FindText objects executing, especially when they are from different code bases (e.g. a custom find-in-page dialog running at the same time as an annotation client library). Presumably, the implementation could optimize by having them use the same <a>search content</a>?
+      </p>
+
+      <p class="issue">
+        What's the expectation for updating the <a>search content</a> to reflect the state of the dynamic DOM, while a FindText object is executing?
+      </p>
 
     </section>
 
@@ -233,38 +246,6 @@
       </h2>
       <dl>
         <dt>
-          <dfn id="search_tree">search tree</dfn>
-        </dt>
-        <dd>
-          The <a>search tree</a> is the subset of the document that the <a>FindText</a> object is scoped to search in.
-        </dd>
-
-        <dt>
-          <dfn id="search_content">search content</dfn>
-        </dt>
-        <dd>
-          The <a>search content</a> is the normalized element text content from the <a>search tree</a>.
-        </dd>
-
-        <dt>
-          <dfn id="search_index">search index</dfn>
-        </dt>
-        <dd>
-          The <a>search index</a> is the character position of the <a>search operation</a> in the <a>search content</a>.
-
-          <p class="issue">
-            Should <a>search index</a> be exposed as a property of the <a>FindText</a> interface? That might allow more fine-grained control of the interface, and provide a way to detect the current search progress state (which might mean also exposing the total character length of the <a>search content</a>).
-          </p>
-        </dd>
-
-        <dt>
-          <dfn id="search_operation">search operation</dfn>
-        </dt>
-        <dd>
-          The <a>search operation</a> is the current execution of the <a class="idlType" href="#widl-FindText-search-Promise-FindTextResult--boolean-forward"><code>search</code></a> method of the <a>FindText</a> interface.
-        </dd>
-
-        <dt>
           <dfn id="edit_distance">edit distance</dfn>
         </dt>
         <dd>
@@ -287,6 +268,51 @@
           <p class="issue">
             What about "close key" calculations (keyboard-specific)
           </p>            
+        </dd>
+
+        <dt>
+          <dfn id="search_tree">search tree</dfn>
+        </dt>
+        <dd>
+          The <a>search tree</a> is the subset of the document that the <a>FindText</a> object is scoped to search in.
+        </dd>
+
+        <dt>
+          <dfn id="search_content">search content</dfn>
+        </dt>
+        <dd>
+          The <a>search content</a> is the normalized element text content from the <a>search tree</a>.
+        </dd>
+
+        <dt>
+          <dfn id="search_cursor">search cursor</dfn>
+        </dt>
+        <dd>
+          The <a>search cursor</a> is the character position of the <a>search operation</a> in the <a>search content</a>.
+
+          <p class="issue">
+            Should <a>search cursor</a> be exposed as a property of the <a>FindText</a> interface? That might allow more fine-grained control of the interface, and provide a way to detect the current search progress state (which might mean also exposing the total character length of the <a>search content</a>).
+          </p>
+
+          <p class="issue">
+            Would this be clearer if it were named <a>search index</a>?
+          </p>
+        </dd>
+
+        <dt>
+          <dfn id="search_operation">search operation</dfn>
+        </dt>
+        <dd>
+          The <a>search operation</a> is the current execution of the <a class="idlType" href="#widl-FindText-search-Promise-FindTextResult--boolean-forward"><code>search</code></a> method of the <a>FindText</a> interface.
+        </dd>
+
+        <dt>
+          <dfn id="whitespace_character">whitespace character</dfn>
+        </dt>
+        <dd>
+          <p>
+            A whitespace character is any character with the Unicode character property "WSpace=Y", including the following codepoints: U+0009 (character tabulation); U+000A (line feed); U+000B (line tabulation); U+000C (form feed); U+000D (carriage return); U+0020 (space); U+0085 (next line); U+00A0 (no-break space); U+1680 (ogham space mark); U+2000 (en quad); U+2001 (em quad); U+2002 (en space); U+2003 (em space); U+2004 (three-per-em space); U+2005 (four-per-em space); U+2006 (six-per-em space); U+2007 (figure space); U+2008 (punctuation space); U+2009 (thin space); U+200A (hair space); U+2028 (line separator); U+2029 (paragraph separator); U+202F (narrow no-break space); U+205F (medium mathematical space); U+3000 (ideographic space).. 
+          </p>
         </dd>
       </dl>
     </section>
@@ -320,7 +346,7 @@
           Currently, this API uses attributes to set selectors. I considered using chaining setter methods, which would allow for multiple parameters for each selector, and specific confidence ratings for each selector. However, that approach wouldn't let you initialize the object with a property object, nor allow easy object introspection. Feedback welcome.
         </p>
 
-        <dl title='[Constructor(optional FindTextArgs args)] interface FindText : EventTarget' class='idl' data-merge="FindTextState FindTextResult FindTextArgs UnicodeEquivalenceType">
+        <dl title='[Constructor(optional FindTextArgs args)] interface FindText : EventTarget' class='idl' data-merge="FindTextState FindTextResult FindTextArgs caseFoldingType UnicodeEquivalenceType">
           <dt>
             attribute DOMString text
           </dt>
@@ -420,11 +446,14 @@
           <dd>
             <p>
               A range object, as the starting point for the selection search.
+              <p class="issue">
+                Do we really need both <code>scopeRange</code> and <code>startRange</code>? Couldn't an application define a <code>scopeRange</code> using a <code>startRange</code> and extending it to the end of the document?
+              </p>
             </p>
           </dd>
 
           <dt>
-            attribute boolean caseFolding
+            attribute caseFoldingType caseFolding
           </dt>
           <dd>
             <p>
@@ -433,7 +462,7 @@
           </dd>
 
           <dt>
-            attribute UnicodeEquivalenceType unicodeFolding
+            attribute UnicodeEquivalenceType unicodeNormalization
           </dt>
           <dd>
             <p> 
@@ -471,6 +500,14 @@
             <p>
               A boolean representing whether a search MUST require that the search string be surrounded by non-word characters. The default value MUST be false.
             </p>
+
+            <p class="issue">
+              Define how wholeWord interacts with edit distance. Probably wholeWord needs an exact match, regardless of edit distance tolerance.
+            </p>
+
+            <p class="issue">
+              Define how wholeWord works in languages without word breaks. Probably any match there satisfies wholeWord (e.g. it doesn't matter how wholeWord is set).
+            </p>
           </dd>
 
           <dt>
@@ -486,7 +523,7 @@
           </dt>
           <dd>
             <p>
-              Executes the search, based on the current selection criteria attributes, from the current search index position within the document serialization. The return result MUST be a <code>Promise</code> of a <a>FindTextResult</a> object with properties defined as follows:
+              Executes the search, based on the current selection criteria attributes, from the current <a>search cursor</a> position within the document serialization. The return result MUST be a <code>Promise</code> of a <a>FindTextResult</a> object with properties defined as follows:
             </p>
             <ul>
               <li>
@@ -499,7 +536,7 @@
             </ul>
 
             <p class="issue">
-              TODO: Add algorithm that describes the <a>search operation</a>, the setting of the <a>search</a> index position, evaluation of each search criterion, and so on. Maybe that's in a later section of the spec?
+              TODO: Add algorithm that describes the <a>search operation</a>, the setting of the <a>search cursor</a> position, evaluation of each search criterion, and so on. Maybe that's in a later section of the spec?
             </p>
 
             <dl class="parameters">
@@ -508,13 +545,13 @@
               </dt>
               <dd>
                 <p>
-                  This parameter indicates whether the search should proceed in forward (positive) direction from the current <a>search index</a>, or in a reverse (negative) direction. The default value MUST be true.
+                  This parameter indicates whether the search should proceed in forward (positive) direction from the current <a>search cursor</a>, or in a reverse (negative) direction. The default value MUST be true.
                 </p>
                 <p>
-                  If the value is <code>true</code>, the search MUST continue in a positive direction along the character or DOM serialization, from the start of the document toward the end, beginning at the current <a>search index</a>.
+                  If the value is <code>true</code>, the search MUST continue in a positive direction along the character or DOM serialization, from the start of the document toward the end, beginning at the current <a>search cursor</a>.
                 </p>
                 <p>
-                  If the value is <code>false</code>, the search MUST continue in a negative direction along the character or DOM serialization, from the end of the document toward the start, beginning at the current <a>search index</a>.
+                  If the value is <code>false</code>, the search MUST continue in a negative direction along the character or DOM serialization, from the end of the document toward the start, beginning at the current <a>search cursor</a>.
                 </p>
               </dd>
             </dl>  
@@ -531,6 +568,48 @@
         </dl>
 
 
+        <dl title="enum caseFoldingType" class="idl">
+          <dt>
+            none
+          </dt>
+          <dd>
+            The search MUST NOT use any case folding of characters.
+          </dd>
+
+          <dt>
+            ascii
+          </dt>
+          <dd>
+            The search MUST map all code points in the range 0x41 to 0x5A (A to Z) to the corresponding code points in the range 0x61 to 0x7A (a to z).
+
+            <p class="issue">
+              Should we defer to [[!charmod-norm]] for this definition?
+            </p>
+          </dd>
+          
+          <dt>
+            unicode
+          </dt>
+          <dd>
+            The search MUST map all code points to their Unicode C+F case fold equivalents. Note that this can change the length of the string.
+
+            <p class="issue">
+              Should we defer to [[!charmod-norm]] for this definition?
+            </p>
+          </dd>
+          
+          <dt>
+            language-sensitive 
+          </dt>
+          <dd>
+            The search MUST map all code points to their case-fold mappings defined in the Unicode Common Locale Data Repository [[!UAX35].
+
+            <p class="issue">
+              This is defined in [[!charmod-norm]], but should we defer value this to a later version of the spec?
+            </p>
+          </dd>
+        </dl>
+
         <dl title="enum UnicodeEquivalenceType" class="idl">
           <dt>
             none
@@ -538,17 +617,42 @@
           <dd>
             The search MUST NOT use any Unicode equivalence of characters.
           </dd>
+
           <dt>
             canonical
           </dt>
           <dd>
             The search MUST use canonical (NFC/NFD) Unicode equivalence of characters.
           </dd>
+          
           <dt>
             compatibility
           </dt>
           <dd>
             The search MUST use compatibility (NFKC/NFKD) Unicode equivalence of characters.
+
+            <p class="issue">
+              Does compatibility equivalence match digraph forms, as in the German <code>ö</code> to <code>oe</code>? If not, should we somehow include that anyway?
+            </p>
+
+            <p class="issue">
+              Does compatibility equivalence match elided vowels, as in Hebrew? Or will we have to rely on edit distance? Note that there's only so far we can take this, with abbreviations demonstrating the extreme, such as matching <code>versus</code> and <code>vs</code> or <code>vs.</code>).
+            </p>
+          </dd>
+          
+          <dt>
+            all
+          </dt>
+          <dd>
+            The search MUST use either canonical (NFC/NFD) or compatibility (NFKC/NFKD) Unicode equivalence of characters, whichever produces the more liberal match.
+
+            <p class="issue">
+              Does compatibility already include canonical by definition?
+            </p>
+
+            <p class="issue">
+              Performance issues?
+            </p>
           </dd>
         </dl>
 
@@ -579,10 +683,10 @@
             Range startRange
           </dt> <dd></dd>
           <dt>
-            boolean caseFolding
+            caseFoldingType caseFolding
           </dt> <dd></dd>
           <dt>
-            UnicodeEquivalenceType unicodeFolding
+            UnicodeEquivalenceType unicodeNormalization
           </dt> <dd></dd>
           <dt>
             boolean wholeWord
@@ -684,7 +788,7 @@
       </p>
 
       <p class="issue">
-        How to deal with search matches that are dynamically inserted before the current search index position? LEave it up to the webapp?
+        How to deal with search matches that are dynamically inserted before the current <a>search cursor</a> position? LEave it up to the webapp?
       </p>
 
       <p class="issue">
@@ -725,7 +829,7 @@
       <p>A conforming <a>user agent</a> MUST perform a search operation in a manner that produces results consistent with this following algorithm. A conforming <a>user agent</a> MAY optimize the search algorithm in any way that produces these consistent results.</p>
 
       <div class='note'>
-        <h4>Algorithm summary</h4>
+        <h4>Search Algorithm summary</h4>
         <p>
           The <code>FindText</code> <code>search()</code> method initiates an incremental text search of that portion 
           of the document set as the <code>scope</code> parameter of the <code>FindText</code> object, starting at its <code>startRange</code> parameter. 
@@ -734,13 +838,13 @@
           The search process starts by finding the scope of the search; given the <code>scope</code> range, it first finds the parent start and end elements, and all elements between them; these element comprise the <a>search tree</a>. It then extracts the text content of all these elements, and truncates everything outside the start and end character positions, using the algorithm defined for the <code>textContent</code> attribute in [[!DOM4]]; this is referred to as the <a>search content</a>.  
         </p>
         <p>
-          In the <a>search content</a>, <code>target text</code>, and  <code>prefix and suffix text</code>, all multiple consecutive whitespace characters, including newline characters, are collapsed into single space characters. If the <code>caseFolding</code> attribute is set to true, all characters are converted into their lowercase equivalents (if any). If the <code>unicodeFolding</code> attribute is set to true, all characters are converted into their decomposed equivalents (if any), per the [[!charmod-norm]] spec. <i>If the <code>ignorePunctuation</code> attribute is set to true, all punctuation characters are removed.</i> (How should <code>wholeWord</code> be modeled?)
+          In the <a>search content</a>, <code>target text</code>, and <code>prefix and suffix text</code>, all multiple consecutive whitespace characters, including newline characters, are collapsed into single space characters. If the <code>caseFolding</code> attribute is set to true, all characters are converted into their lowercase equivalents (if any). If the <code>unicodeNormalization</code> attribute is set to true, all characters are converted into their decomposed equivalents (if any), per the [[!charmod-norm]] spec. <i>If the <code>ignorePunctuation</code> attribute is set to true, all punctuation characters are removed.</i> (How should <code>wholeWord</code> be modeled?)
         </p>
         <p>
           Once the <a>search content</a>, <code>target text</code>, and  <code>prefix and suffix text</code> are normalized according to the required parameters, the search operation is begun. The starting point of the search is the character position of the <code>startRange</code> attribute; if this character position lies outside the scoped range, then the starting point of the search is the 0 position of the <a>search content</a> string.
         </p>
         <p>
-          The <code>target text</code> is then incrementally compared with the <a>search content</a>, within the tolerance of the specified <a href="#edit_distance">edit distance</a>. Each such operation is performed at the current index character, starting with the first character and proceeding to each subsequent character. If there is a match, the prefix and suffix strings are also tested against the surrounding text and within their respective specified <a href="#edit_distance">edit distance</a> tolerances. If this also matches, then the process stops and the return results are prepared. If no appropriate match is found, the index character is incremented by a single character until a match is found, or until the end of the <a>search content</a> is reached if the <code>wrap</code> attribute is set to false. If the <code>wrap</code> attribute is set to true, and the start position was not the 0 position of the <a>search content</a> string, the search only concludes when the start position has been reached.
+          The <code>target text</code> is then incrementally compared with the <a>search content</a>, within the tolerance of the specified <a href="#edit_distance">edit distance</a>. Each such operation is performed at the current <a>search cursor</a>x character, starting with the first character and proceeding to each subsequent character. If there is a match, the prefix and suffix strings are also tested against the surrounding text and within their respective specified <a href="#edit_distance">edit distance</a> tolerances. If this also matches, then the process stops and the return results are prepared. If no appropriate match is found, the cursor character is incremented by a single character until a match is found, or until the end of the <a>search content</a> is reached if the <code>wrap</code> attribute is set to false. If the <code>wrap</code> attribute is set to true, and the start position was not the 0 position of the <a>search content</a> string, the search only concludes when the start position has been reached.
         </p>
         <p>
           The return results are prepared by first reconciling the matched string with its equivalent DOM range in the document. This range object is created, and bundled in an object with the original search parameters. This return object is in the form of a Promise, so the results can be analyzed and subsquent search operations can be performed by incrementing the start range position based on the matched range (if any). By performing this search multiple times, an application can incrementally find all matching ranges in the document.
@@ -748,189 +852,248 @@
       </div>
 
 
-      <p>The steps to <dfn>perform a search operation</dfn> to a 
-        <a>document</a> using <a>FindText</a> are as follows:</p>
-      <ol>
+      <h4>Search Algorithm</h4>
+      <p>The steps to <dfn>perform a search operation</dfn> on a <a>document</a> using <a>FindText</a> are as follows:</p>
+
+      <p class="issue">
+        This algorithm is still a rough draft, and may change based on concrete feedback.
+      </p>
+
+      <ol id="search_algorithm">
         <li>If the <a>user agent</a> does not support searching the <a>document</a> using <a>FindText</a>,
           return a <a>Promise</a> rejected with a
           <code>DOMException</code> whose name is
-          <code>NotSupportedError</code> and abort these steps.
+          <code>NotSupportedError</code> and End these steps.
         </li>
         <li>The following sub-steps MAY be run asynchronously for performance
         reasons, for example, if the <a>user agent</a> has <a title=
         'browsing context'>browsing contexts</a> living in different
         processes:
           <ol>
-            <li>Let <var>browsing contexts</var> be the <a>list of the
-            descendant browsing contexts</a> of the <a>top-level browsing
-            context</a>'s <a>document</a>.
-            </li>
-            <li>If one of the <var>browsing contexts</var>'s
-            <a>document</a>'s <a>pending promise</a> is not
-            <code>null</code>:
+            <li>Let <var>browsing contexts</var> be the <a>list of the descendant browsing contexts</a> of the <a>top-level browsing context</a>'s <a>document</a>.</li>
+            <li>For each <a data-link-type="dfn" class="internalDFN" href="#dfn-browsing-context">browsing context</a> in <var>browsing contexts</var>, run the following sub-steps:
               <ol>
-                <li>Let <var>doc</var> be the <a>document</a> which has a not
-                <code>null</code> <a>pending promise</a>.
+                <li>Let <var>doc</var> be the <a data-link-type="dfn" class="internalDFN" href="#dfn-browsing-context">browsing context</a>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-active-document">active document</a>.</li>
+                <li>If <var>doc</var> is not visible per [<cite><a href="#bib-PAGE-VISIBILITY" class="bibref">PAGE-VISIBILITY</a></cite>], End these steps.</li>
+
+
+                <!-- prep promise -->
+                <li>If <var>doc</var>'s <a>document</a>'s <a>pending promise</a> is not <code>null</code>:
+                  <ol>
+                    <li>Let <var>doc</var> be the <a>document</a> which has a not <code>null</code> <a>pending promise</a>.
+                    </li>
+                    <li>Reject <var>doc</var>'s <a>pending promise</a> with <code>DOMException</code> whose name is <code>EndError</code>.
+                    </li>
+                    <li>Set <var>doc</var>'s <a>pending promise</a> to <code>null</code>.</li>
+                  </ol>
                 </li>
-                <li>Reject <var>doc</var>'s <a>pending promise</a> with
-                <code>DOMException</code> whose name is
-                <code>AbortError</code>.
+
+                <!-- prep search content -->
+                <li>Let <var>search tree</var> be the active target portion of <var>doc</var>.</li>
+                <li>Set initial value of <var>search tree</var> to <var>doc</var>.</li>
+                <li>If <a>scopeRange</a> is not <code>null</code>:
+                  <ol>
+                    <li>If the value of <a>scopeRange</a> is found within <var>doc</var>, set the value of <var>search tree</var> to the value of <a>scopeRange</a>.</li>
+                    <li>If the value of <a>scopeRange</a> is not found within <var>doc</var>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <code>RANGE NOT FOUND</code>.
+                      <p class="issue">
+                        Define <code>RANGE NOT FOUND</code>, or find a better return value.
+                      </p>
+                    </li> 
+                  </ol>
+                  <p class="issue">
+                    This conflates the notion of range and DOM tree. Find a better way to set the <var>search tree</var> to the <a>scopeRange</a>.
+                  </p>
                 </li>
-                <li>Set <var>doc</var>'s <a>pending promise</a> to 
-                <code>null</code>.
+                <li>Let <var>search content</var> be the result of applying the <a href="http://www.w3.org/TR/dom/#dom-node-textcontent">[[!DOM4]] <code>textContent</code> attribute algorithm</a> algorithm to the <var>search tree</var>.
+                  <p class="issue">
+                    Note that this will not allow users to search for CSS-injected content, as currently defined. This is unintuitive, and may not match browser find-in-page behavior.
+                  </p>
                 </li>
-              </ol>
+
+
+                <!-- prep target text -->
+                <li>Let <var>target text</var> be the discrete values of <a>text</a>, <a>prefix</a>, and <a>suffix</a>.</li>
+
+                <!-- set internalization parameters -->
+                <li>Collapse all consecutive sequences of any <a>whitespace character</a> into a single U+0020 (space) character, in the <var>search content</var> and <var>target text</var>.</li>
+                <li>If <a>caseFolding</a> is not <code>null</code> or the value is not <code>none</code>:
+                  <ol>
+                    <li>If the value of <a>caseFolding</a> is <code>ascii</code>, map all code points in the range 0x41 to 0x5A (A to Z) to the corresponding code points in the range 0x61 to 0x7A (a to z), in the <var>search content</var> and <var>target text</var>.</li>
+                    <li>If the value of <a>caseFolding</a> is <code>unicode</code>, map all code points to their Unicode C+F case fold equivalents, in the <var>search content</var> and <var>target text</var>.</li>
+                  </ol>
+
+                  <p class="issue">
+                    Should we defer to [[!charmod-norm]] for this part of the algorithm?
+                  </p>
+
+                </li>
+                <li>If <a>unicodeNormalization</a> is not <code>null</code> or the value is not <code>none</code>:
+                  <ol>
+                    <li>If the value of <a>unicodeNormalization</a> is <code>canonical</code>, convert all characters in the <var>search content</var> and <var>target text</var> their Unicode equivalents using canonical (NFC/NFD) Unicode equivalence of characters.</li>
+                    <li>If the value of <a>unicodeNormalization</a> is <code>compatibility</code>, convert all characters in the <var>search content</var> and <var>target text</var> their Unicode equivalents using compatibility (NFKC/NFKD) Unicode equivalence of characters.</li>
+                    <li>If the value of <a>unicodeNormalization</a> is <code>all</code>, …
+                      <p class="issue">
+                        Is there a good way to handle this?
+                      </p>
+                    </li>
+                  </ol>
+                  <p class="issue">
+                    Consider exposing unicode normalization operations as a separate method.
+                  </p>
+                </li>
+
+                <!-- set search cursor -->
+                <li>Let <a>search cursor</a> be the current character position within <var>search content</var>.</li>
+                <li>Set <a>search cursor</a> to 0.</li>
+                <li>If <a>startRange</a> is not <code>null</code>:
+                  <ol>
+                    <li>If the starting point of <a>startRange</a> is found within <var>search content</var>, set the <a>search cursor</a> to the start of the start range.</li>
+                  </ol>
+                </li>
+
+                <!-- start search operation -->
+
+                <li>Let <var>text match length</var> be the number of Unicode codepoints in <a>text</a>.</li>
+                <li>Let <var>prefix match length</var> be the number of Unicode codepoints in <a>prefix</a>.</li>
+                <li>Let <var>suffix match length</var> be the number of Unicode codepoints in <a>suffix</a>.</li>
+
+                <li>Increment <a>search cursor</a> by 1 character until the <a>search cursor</a> is positioned on the last character in <var>search content</var>; for each increment:
+                  <ol>
+                    <!-- text search operation -->
+                    <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>text match length</var> plus the value of <a>textDistance</a>, starting at the current <a>search cursor</a>.</li>
+                    <li>Apply <var><a href="#text_match_algorithm">text match algorithm</a></var>:
+                      <ol>
+                        <li>Set <var>target text</var> to <a>text</a>.</li>
+                        <li>Set <var>candidate text</var> to <a>candidate text subset</a>.</li>
+                        <li>If <a>text</a> and <a>candidate text subset</a> are a match:
+                          <ol>
+                            <li>Let <var>matching candidate text</var> be <var>candidate text subset</var>.</li>
+                            
+                            <!-- prefix search operation -->
+                            <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>prefix match length</var> plus the value of <a>prefixDistance</a>, starting at the current <a>search cursor</a> minus the <var>prefix match length</var>.</li>
+                            <li>Apply <var><a href="#text_match_algorithm">text match algorithm</a></var>:
+                              <ol>
+                                <li>Set <var>target text</var> to <a>prefix</a>.</li>
+                                <li>Set <var>candidate text</var> to <a>candidate text subset</a>.</li>
+                                <li>If <a>prefix</a> and <a>candidate text subset</a> are a match:
+                                  <ol>
+
+                                    <!-- suffix search operation -->
+                                    <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>suffix match length</var> plus the value of <a>prefixDistance</a>, starting at the current <a>search cursor</a> minus the <var>suffix match length</var>.</li>
+                                    <li>Apply <var><a href="#text_match_algorithm">text match algorithm</a></var>:
+                                      <ol>
+                                        <li>Set <var>target text</var> to <a>suffix</a>.</li>
+                                        <li>Set <var>candidate text</var> to <a>candidate text subset</a>.</li>
+                                        <li>If <a>suffix</a> and <a>candidate text subset</a> are a match:
+                                          
+                                          <!-- match found, find range -->                                   
+                                          <ol>
+                                            <li>Let <var>result</var> be a <a>FindTextResult</a>.</li>
+                                            <li>Let <var>range</var> be a <a>DOM range object</a> in <var>result</var>.</li>
+                                            <li>Set <var>range</var> to a <code>range</code> in <var>doc</var> corresponding to <var>matching candidate text</var>.
+                                              <p class="issue">
+                                                Probably needs more detail. :P
+                                              </p>
+                                            </li>
+                                            <li>Resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.
+                                              <p class="issue">
+                                                Should return cursor position also.
+                                              </p>
+                                            </li>
+                                            <li>End this algorithm.</li>
+                                          </ol>
+                                          
+                                        </li>
+                                      </ol>
+                                    </li>
+
+                                  </ol>
+
+                                </li>
+                              </ol>
+                            </li>
+
+                          </ol>
+                        </li>
+                                          
+                        <!-- no match found -->                                   
+                        <li>Resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <code>MATCH NOT FOUND</code>.
+                          <p class="issue">
+                            Define <code>MATCH NOT FOUND</code>, or find a better return value.
+                          </p>
+                        </li> 
+                        <li>End this algorithm.</li>
+                      </ol>
+                    </li>
+                 
+                  </ol>
+                </li>
+
+
             </li>
           </ol>
         </li>
 
       <li class="issue">
-        Finish the algorithm.
+        Improve this algorithm!
       </li>
 
-<!--         
-        <li>If the <a>document</a>'s <a>active sandboxing flag set</a> has
-        the <a>sandboxed orientation lock browsing context flag</a> set, or
-        <a>user agent</a> doesn't meet the <a>security conditions</a> to
-        perform an orientation change, return a <a>Promise</a> rejected with
-        a <code>DOMException</code> whose name is <code>SecurityError</code>
-        and abort these steps.
-        </li>
-        <li>Let <var>orientations</var> be an empty list.
-        </li>
-        <li>Depending on <var>orientation</var> value, do the following:
-          <dl>
-            <dt>
-              <code><dfn id=
-              'idl-def-OrientationLockType.portrait-primary'>portrait-primary</dfn></code>
-              or <code><dfn id=
-              'idl-def-OrientationLockType.portrait-secondary'>portrait-secondary</dfn></code>
-              or <code><dfn id=
-              'idl-def-OrientationLockType.landscape-primary'>landscape-primary</dfn></code>
-              or <code><dfn id=
-              'idl-def-OrientationLockType.landscape-secondary'>landscape-secondary</dfn></code>
-            </dt>
-            <dd>
-              Append <var>orientation</var> to <var>orientations</var>.
-            </dd>
-            <dt>
-              <code><dfn id=
-              'idl-def-OrientationLockType.landscape'>landscape</dfn></code>
-            </dt>
-            <dd>
-              Depending on platform convention, append
-              <code>landscape-primary</code>, or
-              <code>landscape-secondary</code>, or both to
-              <var>orientations</var>.
-            </dd>
-            <dt>
-              <code><dfn id=
-              'idl-def-OrientationLockType.portrait'>portrait</dfn></code>
-            </dt>
-            <dd>
-              Depending on platform convention, append
-              <code>portrait-primary</code>, or
-              <code>portrait-secondary</code>, or both to
-              <var>orientations</var>.
-            </dd>
-            <dt>
-              <code><dfn id=
-              'idl-def-OrientationLockType.natural'>natural</dfn></code>
-            </dt>
-            <dd>
-              Append <code>portrait-primary</code> or
-              <code>landscape-primary</code> to <var>orientations</var> such
-              as the associated screen orientation angle is 0.
-            </dd>
-            <dt>
-              <code><dfn id=
-              'idl-def-OrientationLockType.any'>any</dfn></code>
-            </dt>
-            <dd>
-              Append <code>portrait-primary</code>,
-              <code>portrait-secondary</code>, <code>landscape-primary</code>
-              and <code>landscape-secondary</code> to
-              <var>orientations</var>.
-            </dd>
-          </dl>
-        </li>
-        <li>Set <var>pending-promise</var> to be a newly-created
-        <a>Promise</a>.
-        </li>
-        <li>Return <var>pending-promise</var> and continue asynchronously.
-        </li>
-        <li>
-          <a>Lock the orientation</a> of the <a>document</a> to
-          <var>orientations</var>.
-        </li>
-        <li>If locking the orientation did not result in a change of
-        orientation, <a>queue a task</a> to resolve
-        <var>pending-promise</var> with <code>undefined</code> and set <var>
-          pending-promise</var> to <code>null</code>.
-        </li>
+<!-- 
+
+The target text is then incrementally compared with the search content, within the tolerance of the specified edit distance. Each such operation is performed at the current cursor character, starting with the first character and proceeding to each subsequent character. If there is a match, the prefix and suffix strings are also tested against the surrounding text and within their respective specified edit distance tolerances. If this also matches, then the process stops and the return results are prepared. If no appropriate match is found, the cursor character is incremented by a single character until a match is found, or until the end of the search content is reached if the wrap attribute is set to false. If the wrap attribute is set to true, and the start position was not the 0 position of the search content string, the search only concludes when the start position has been reached.
+
+The return results are prepared by first reconciling the matched string with its equivalent DOM range in the document. This range object is created, and bundled in an object with the original search parameters. This return object is in the form of a Promise, so the results can be analyzed and subsquent search operations can be performed by incrementing the start range position based on the matched range (if any). By performing this search multiple times, an application can incrementally find all matching ranges in the document. 
+ -->
+
       </ol>
-      <div class='note'>
-        If locking the orientation results in an orientation change, the
-        promise will be resolved when the orientation will change as
-        described in the <a href=
-        '#handling-screen-orientation-changes'>Handling screen orientation
-        changes</a> section.
-      </div>
-      <p>
-        When the <a>user agent</a> has to <dfn>lock the orientation</dfn> of
-        a <a>document</a> to <var>orientations</var>, it MUST run the
-        following steps:
-      </p>
-      <ol>
-        <li>Set the <a>document</a>'s <a>orientation lock</a> to
-        <var>orientations</var>.
-        </li>
-        <li>If the <a>active orientation lock</a> is not the
-        <a>document</a>'s <a>orientation lock</a>, abort these steps.
-        </li>
-        <li>If the <a>active orientation lock</a> value is equal to
-        <var>orientations</var> value, abort these steps.
-        </li>
-        <li>If <var>orientations</var> contains only one value, run the
-        following sub-steps:
+
+      <h4>Text Match Algorithm</h4>
+      <p>The steps to <dfn>perform a text match operation</dfn> on a <a>two strings</a> using <a>FindText</a> are as follows:</p>
+
+      <ol id="text_match_algorithm">
+        <li>Let <var>target text</var> be the string to match.</li>
+        <li>Let <var>target text match length</var> be the number of Unicode codepoints in <a>target text</a>.</li>
+        <li>Let <var>edit distance</var> be the character count variance.</li>
+        <li>Let <var>candidate text</var> be the string to compare to <var>target text</var>.</li>
+        <li>Let <var>match text</var> be the <code>empty string</code>.</li>
+        <li>If <var>candidate text</var> and <a>text</a> contain an identical sequence of codepoints for the length of <var>target text match length</var>: 
           <ol>
-            <li>Let <var>orientation</var> be the value contained in
-            <var>orientations</var>.
-            </li>
-            <li>Change how the viewport is drawn so that the
-            <a>document</a>'s <a>current orientation type</a> will be equal
-            to <var>orientation</var>.
-            </li>
-            <li>After the change has happened, prevent the <a>document</a>'s
-            <a>top-level browsing context</a>'s screen orientation from
-            changing until those steps are run again.
-            </li>
-            <li>Abort these steps.
-            </li>
+            <li>Set <var>match text</var> to <var>candidate text</var>.</li>
+            <li>Return <var>match text</var> and End this algorithm.</li>
           </ol>
         </li>
-        <li>If the <a>document</a>'s <a>current orientation type</a> is not
-        part of <var>orientations</var>, change how the viewport is drawn
-        such as the <a>document</a>'s <a>current orientation type</a> will be
-        equal to one of <var>orientations</var>' values.
+        <li>If <var>candidate text</var> and <a>text</a> match in a comparison using the <a>Calculating Edit Distance Algorithm</a>: 
+          <ol>
+            <li>Set <var>match text</var> to <var>candidate text</var>.</li>
+            <li>Return <var>match text</var> and End this algorithm.</li>
+          </ol>
         </li>
-        <li>Otherwise, depending on platform conventions, change how the
-        viewport is drawn in order to make it match another screen
-        orientation type. However, it has to be part of
-        <var>orientations</var>.
+      </ol>
+    </section>
+
+    <section>
+      <h3>Calculating edit distance</h3>
+      <p>A conforming <a>user agent</a> MUST calculate the edit distance of 2 strings in a manner that produces results consistent with this following algorithm. A conforming <a>user agent</a> MAY optimize the search algorithm in any way that produces these consistent results.</p>
+
+      <div class='note'>
+        <h4>Calculating Edit Distance Algorithm summary</h4>
+        <p>The edit distance is calculated by first finding and comparing the matching sequence of codepoints in both strings, regardless of intervening extra characters. If the count of the mutual sequence of codepoint matches is within the user-defined tolerance limit (of <a>textDistance</a>, <a>prefixDistance</a>, and <a>suffixDistance</a>, respectively), then the string is considered a match using the change, insertion, or deletion operations.</p>
+
+        <p>For example, the words <i>complete</i> and <i>computer</i> have the following mutual sequence of letters: <i>c</i>, <i>o</i>, <i>m</i>, <i>p</i>, <i>t</i>, and <i>e</i>. This pair has an edit distance of 3, because you must perform 3 operations: delete the <i>l</i>, change the <i>e</i> to an <i>u</i>, and add an <i>r</i>. So, a search for <i>complete</i> with an edit distance of 3 would also match <i>computer</i> (as well as more obvious matches like <i>completes</i>, <i>completed</i>, and <i>compete</i>).</p>
+
+        <p>Note that in practice, all three of these operations can be combined, and are typically performed simultaneously.</p>      
+      </div>
+
+      <h4>Calculating Edit Distance Algorithm</h4>
+      <ol id="edit_distance_algorithm">
+        <li>
+          
+          <p class="issue">
+            Define the EditDistance algorithm.
+          </p>          
         </li>
-        <li>Allow the user to change the screen orientation to any value part
-        of <var>orientations</var> and only those values until those steps
-        are run again. The method to define the current screen orientation
-        has to match the platform conventions.
-        </li> 
-        -->
       </ol>
 
-
-      <p class="issue">
-        Define the EditDistance algorithm.
-      </p>
 
     </section>
 
@@ -1063,6 +1226,40 @@ var result = rf.search(); // result is 1st instance of string within query selec
       </section>
     </section>
    
+    <section class='notes'>
+      <h2>Notes</h2>
+      <aside class="issue">
+        <p>
+          This API might be alternately designed as a Text interface, with various methods including search.
+        </p>
+        <pre><code>
+Text interface
+    unsigned short Text.findEditDistance (DOMString comparisonString, DOMString targetString);
+    DOMString Text.collapseWhitespace();
+    DOMString Text.stringify( Element );
+    DOMString Text.foldUnicode( DOMString text, UnicodeEquivalenceType);
+    Promise≺FindTextResult≻ Text.search (
+                                    attribute DOMString              searchContent;
+                                    attribute DOMString              text;
+                                    attribute unsigned short         textDistance;
+                                    attribute DOMString              prefix;
+                                    attribute unsigned short         prefixDistance;
+                                    attribute DOMString              suffix;
+                                    attribute unsigned short         suffixDistance;
+                                    attribute Range                  scopeRange;
+                                    attribute Range                  startRange;
+                                    attribute caseFoldingType        caseFolding;
+                                    attribute UnicodeEquivalenceType unicodeNormalization;
+                                    attribute boolean                wholeWord;
+                                    attribute boolean                wrap;
+                                    optional boolean forward
+                                   );
+    DOMRange Text.findEquivalentRange( ... );
+
+        </code></pre>  
+      </aside>
+    </section>
+
     <section class='appendix'>
       <h2>Acknowledgements</h2>
       <p>
