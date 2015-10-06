@@ -130,7 +130,11 @@
         What's the expectation for updating the <a>search content</a> to reflect the state of the dynamic DOM, while a FindText object is executing?
       </p>
 
-    </section>
+      <p class="note">
+        This specification shares some conceptual similarities to the Selection API. Both deal with collections of ranges; while the Selection API deals with user actions in a live DOM, the FindText API deals with programmatic selection of ranges based on text criteria. The main interrelation between them is that one user might make a selection in a document, which can be serialized as text in such a way that another user could recreate that selection on their own instance of the document (e.g. you can store and share selections across devices). The use cases are otherwise very different. 
+      </p>
+   
+    </section> 
 
 
     <section>
@@ -427,7 +431,7 @@
           </dd>
 
           <dt>
-            attribute Range scopeRange
+            attribute Element scope
           </dt>
           <dd>
             <p>
@@ -435,7 +439,7 @@
             </p>
 
             <p class="issue">
-              Should this be an element?
+              This was originally a range, not an an element. I'm not sure why I did that, because ranges are a PITA to work with if you don't need to… surely there must be a reason I made it a range? Maybe because I wanted to give the developer the power to select non-element start and stop points?
             </p>
           </dd>
 
@@ -969,17 +973,17 @@
                 <!-- prep search content -->
                 <li>Let <var>search tree</var> be the active target portion of <var>doc</var>.</li>
                 <li>Set initial value of <var>search tree</var> to <var>doc</var>.</li>
-                <li>If <a>scopeRange</a> is not <code>null</code>:
+                <li>If <a>scope</a> is not <code>null</code>:
                   <ol>
-                    <li>If the value of <a>scopeRange</a> is found within <var>doc</var>, set the value of <var>search tree</var> to the value of <a>scopeRange</a>.</li>
-                    <li>If the value of <a>scopeRange</a> is not found within <var>doc</var>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <code>RANGE NOT FOUND</code>.
+                    <li>If the value of <a>scope</a> is found within <var>doc</var>, set the value of <var>search tree</var> to the value of <a>scope</a>.</li>
+                    <li>If the value of <a>scope</a> is not found within <var>doc</var>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <code>NOT FOUND</code>.
                       <p class="issue">
-                        Define <code>RANGE NOT FOUND</code>, or find a better return value.
+                        Define <code>NOT FOUND</code>, or find a better return value.
                       </p>
                     </li> 
                   </ol>
                   <p class="issue">
-                    This conflates the notion of range and DOM tree. Find a better way to set the <var>search tree</var> to the <a>scopeRange</a>.
+                    This conflates the notion of range and DOM tree. Find a better way to set the <var>search tree</var> to the <a>scope</a>.
                   </p>
                 </li>
                 <li>Let <var>search content</var> be the result of applying the <a href="http://www.w3.org/TR/dom/#dom-node-textcontent">[[!DOM4]] <code>textContent</code> attribute algorithm</a> algorithm to the <var>search tree</var>.
@@ -1215,9 +1219,10 @@ The return results are prepared by first reconciling the matched string with its
 
     <section id="examples" class="informative">
       <h2>Examples</h2>
-        <p class="warning">
-          This examples section is out of date, and uses syntax from an earlier draft of this spec. The general ideas are similar, but the syntax may be very different.
-        </p>
+      <p class="warning">
+        This examples section is very much in flux, and the syntx may be wrong. The general ideas should be similar, but the syntax may be quite different. There may even be changes to the API based on feedback on the examples.
+      </p>
+
       <p>
         Poetry, lyrics, and some prose often include significant repetition. A simple find-text operation would return only the first instance of a repetition, while the selection in question might be for the second or third instance.
       </p>
@@ -1272,72 +1277,110 @@ The return results are prepared by first reconciling the matched string with its
           </p>
         </article>
 
-        <h4 id="ex1-m1">Method 1: Iterative search</h4>
-        <pre class="example"><code>
-var rf = new FindText({ text: "Rage, rage" });
-var result = rf.search(); // result is 1st instance of string
-    result = rf.search(); // result is 2nd instance of string
-    result = rf.search(); // result is 3rd instance of string, the target instance
-        </code></pre>
-
-        <h4 id="ex1-m2">Method 2: Context search with prefix</h4>
-        <pre class="example"><code>
-var rf = new FindText({ text: "Rage, rage" });
-    rf.prefix = "blaze like meteors and be gay, "; // the 32 characters preceding the selection
-var result = rf.search(); // result is 1st instance of string after prefix
-        </code></pre>
-
-        <h4 id="ex1-m3">Method 3: Character count</h4>
-        <pre class="example"><code>
-var rf = new FindText();
-    rf.characterStart = 696; // the character count of the normalized textContent preceding the selection
-    rf.characterLength = 11; // the character count of the selection
-var result = rf.search(); // result is the 11 characters starting at the position 696
-        </code></pre>
+        <div>
+          <h4 id="ex1-m1">Method 1: Search and filter all results</h4>
+          <pre class="example"><code>
+var find = new FindText({ "text": "Rage, rage" });
+find.searchAll().then( 
+  function( ResultMatchAll ) {          // ResultMatchAll returns an array of all matching instances, as ranges
+    var match = ResultMatch.result[2];  // target instance is is 3rd member of result array
+  }
+);
+          </code></pre>        
+        </div>
 
 
+        <div>
+          <h4 id="ex1-m2">Method 2: Iterative search</h4>
+          <pre class="example"><code>
+function handleMatch( result ) {
 
-        <h4 id="ex1-m4">Method 4: Edit distance and query selector</h4>
+  find.search().then( handleMatch );
+  // do things with match check if it does what i need
+  findText( string, result.position, ... ).search().then( handleMatch );
+}
+var find = new FindText({ 
+                          "text": "Rage, rage", // the selection
+                          "cursor": 0 // the 32 characters preceding the selection 
+                        });
+var resultCount = 0;
+handleMatch();
+function handleMatch( result ) {
+  if (3 > resultCount) {
+    var match = find.search().then( handleMatch );
+    if ( match.result) {
+      resultCount++;
+    }
+  }
+}
+          </code></pre>
+          <p class="issue">
+            I know this iterator is wrong, but I don't grok promises well enough yet to fit it, and I need more sleep.
+          </p>
+        </div>
 
-        @@ YOU ARE HERE! @@
-        <pre class="example"><code>
-        var range = document.createRange();
-            range.setStart(startNode, startOffset);
-            range.setEnd(endNode, endOffset);
-var rf = new FindText();
-    rf.text = "Range, range"; // the selection, misspelled
-    rf.editDistance = 2; // the Levenshtein distance tolerance between "Rage, rage" and "Range, range"
-    rf.querySelector = "p:nth-of-type(5)"; // the 5th paragraph (the one containing the selection)
-var result = rf.search(); // result is 1st instance of string starting at query selector, 
-                          //   with a confidence reflecting the expected edit distance
-        </code></pre>
 
-        <h4 id="ex1-m5">Method 5: Edit distance and query selector</h4>
-        <pre class="example"><code>
-var rf = new FindText();
-    rf.text = "Range, range"; // the selection, misspelled
-    rf.editDistance = 2; // the Levenshtein distance tolerance between "Rage, rage" and "Range, range"
-    rf.querySelector = "p:nth-of-type(5)"; // the 5th paragraph (the one containing the selection)
-var result = rf.search(); // result is 1st instance of string starting at query selector, 
-                          //   with a confidence reflecting the expected edit distance
-        </code></pre>
+        <div>
+          <h4 id="ex1-m3">Method 3: Context search with prefix</h4>
+          <pre class="example"><code>
+var find = new FindText({ 
+                          "text": "Rage, rage", // the selection
+                          "prefix": "blaze like meteors and be gay, " // the 32 characters preceding the selection 
+                        });
+var match = find.search().result; // result is 1st instance of string after prefix
+          </code></pre>
+        </div>
 
-        <h4 id="ex1-m6">Method 6: Element scope</h4>
-        <p class="note">
-          The main difference here between the <code>querySelector</code> attribute (used in <a href="#ex1-m4">Method 4</a>)
-          and the <code>element</code> attribute is that <code>querySelector</code> sets the starting point for the search, 
-          while <code>element</code> limits the scope. In other words, running <code>search()</code> again on the previous example
-          will find the next instance in the next paragraph, while in this example, it will only find the single instance in the target paragraph.
-        </p>
-        <pre class="example"><code>
-var rf = new FindText();
-    rf.text = "Rage, rage"; // the selection
-    rf.element = document.querySelector("p:nth-of-type(5)"); // limit scope to the 5th paragraph
-                                                             //   (the one containing the selection)
-var result = rf.search(); // result is 1st instance of string within query selector, 
-                          //   with a confidence reflecting the expected edit distance
-        </code></pre>
 
+        <div>
+          <h4 id="ex1-m4">Method 4: Character count</h4>
+          <pre class="example"><code>
+var start_range = document.createRange();
+    start_range.setStart(document, 696); // the character count of the normalized searchContent preceding the selection
+    start_range.setEnd(document, 11);    // the character count of the selection
+var find = new FindText({ "startRange": start_range }); 
+var match = find.search().result;            // result is the 11 characters starting at the position 696
+          </code></pre>
+          <p class="issue">
+            I don't think the algorithm currently accounts for the "character count" behavior, but you should have a way to make a match based only on character count and offsets in the searchContent, without a target string, for increased robustness (using multiple fallback selection criteria) and flexibility. Ranges only do this in the document, and we might want finer control for searchContent. But I'm not sure if this is the right way to do it. When scope was a range, that might have been another way.
+          </p>          
+        </div>
+
+
+        <div>
+          <h4 id="ex1-m5">Method 5: Edit distance and scope selector</h4>
+          <pre class="example"><code>
+var scope = document.querySelector("p:nth-of-type(5)"); // the 5th paragraph (the one containing the selection)  
+var find = new FindText({ 
+                          "scope": scope,
+                          "text": "Range, range", // the selection, misspelled
+                          "editDistance": 2; // the edit distance between "Rage, rage" and "Range, range"
+                        });
+var result = find.search().result; // result is 1st instance of string within scope element
+          </code></pre>          
+        </div>
+
+
+        <div>
+          <h4 id="ex1-m6">Method 6: Element scope</h4>
+          <p class="note">
+            The main difference here between the <code>scope</code> attribute (used in <a href="#ex1-m5">Method 5</a>) and the <code>startRange</code> attribute is that <code>startRange</code> sets the starting point for the search, while <code>scope</code> limits the scope. In other words, running <code>search()</code> again on this example will find the next instance in the next paragraph, while in the previous example, it will only find the single instance in the target paragraph.
+          </p>
+          <pre class="example"><code>
+var start = document.querySelector("p:nth-of-type(5)"); // the 5th paragraph (the one containing the selection)  
+var start_range = document.createRange();
+    start_range.setStart(scope, 0);
+    start_range.setEnd(scope, 1);    // the character count of the selection
+var find = new FindText({ 
+                          "startRange": start_range,
+                          "text": "Rage, rage"
+                        });
+var result = find.search().result; // result is 1st instance of string, starting at location query selector
+          </code></pre>
+          <p class="issue">
+            Actually, this might not work, because the range is on the document, while it's being applied to the normalized searchContent. Maybe there should be an intervening step.
+          </p>
+        </div>
 
       </section>
     </section>
@@ -1362,7 +1405,7 @@ Text interface
                                     attribute unsigned short         prefixDistance;
                                     attribute DOMString              suffix;
                                     attribute unsigned short         suffixDistance;
-                                    attribute Range                  scopeRange;
+                                    attribute Range                  scope;
                                     attribute Range                  startRange;
                                     attribute caseFoldingType        caseFolding;
                                     attribute UnicodeEquivalenceType unicodeNormalization;
