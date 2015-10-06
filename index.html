@@ -75,7 +75,10 @@
     <section class="informative">
       <h2>Introduction</h2>
       <p>
-        Finding a text selection is a basic operation of a Web browser, but the functionality is not exposed to Web developers. There are many different use cases for a custom mechanism for finding and navigating to a particular range of text in a Web document, such as [[!HTML5]] or [[!SVG]]. A developer may wish to design a webapp in which only the text in the active editing subtreee, and not the controls or other application text, is returned as a result of a search, overriding the native find-text functionality. A user may wish to highlight a particular passage, and link to it, even if that selection doesn't have a <code>id</code> attribute to serve as a fragment identifier. A designer may wish to find and style a range of text without changing the markup. A developer may wish to provide a particular text-matching algorithm for searching their specific type of content, to return more meaningful results (such as fuzzy matching or term substitution). A CMS developer may wish to allow advanced review and commenting on text selections for a collaborative document. All of these use cases share the a fundamental requirement for a API to find text.  
+        Finding a text selection is a basic operation of a Web browser, but the functionality is not exposed to Web developers. The FindText API provides a way for developers to find text selections, with several options to refine more targeted and flexible searches, including fuzzy matching, in a way that works well with a variety of human languages.  
+      </p>
+      <p>
+        There are many different use cases for a custom mechanism for finding and navigating to a particular range of text in a Web document, such as [[!HTML5]] or [[!SVG]]. A developer may wish to design a webapp in which only the text in the active editing subtreee, and not the controls or other application text, is returned as a result of a search, overriding the native find-text functionality. A user may wish to highlight a particular passage, and link to it, even if that selection doesn't have a <code>id</code> attribute to serve as a fragment identifier. A designer may wish to find and style a range of text without changing the markup. A developer may wish to provide a particular text-matching algorithm for searching their specific type of content, to return more meaningful results (such as fuzzy matching or term substitution). A CMS developer may wish to allow advanced review and commenting on text selections for a collaborative document. All of these use cases share the a fundamental requirement for a API to find text.  
       </p>
       <p>
         There are many challenges to finding text in a modern Web document. 
@@ -100,7 +103,7 @@
         For performance reasons, the FindText API can be evoked iteratively, to find the next match in the document, rather than attempting to search the entire document for all matches.
       </p>
       <p>
-        The result of a FindText search is an object that contains the found range, any additional addressing characteristics, and a confidence interval to indicate how closely the search result matches the various selection criteria. By running a search multiple times and comparing the confidence interval for each result, a script can determine the best match for that set of search criteria. A script can also add or subtract selectors based on the results and confidence interval to refine a search.
+        The result of a FindText search is an object that contains the found range, and any additional addressing characteristics. By running a search multiple times and comparing the results against the search criteria, a script can determine the best match for that set of search criteria. A script can also add or subtract selectors based on the results to refine a search.
       </p>
 
 
@@ -303,7 +306,7 @@
           <dfn id="search_operation">search operation</dfn>
         </dt>
         <dd>
-          The <a>search operation</a> is the current execution of the <a class="idlType" href="#widl-FindText-search-Promise-FindTextResult--boolean-forward"><code>search</code></a> method of the <a>FindText</a> interface.
+          The <a>search operation</a> is the current execution of the <a class="idlType" href="#widl-FindText-search-Promise-ResultMatch--boolean-forward"><code>search</code></a> method of the <a>FindText</a> interface.
         </dd>
 
         <dt>
@@ -326,7 +329,7 @@
       </p>
 <!-- 
       <section>
-        <h2>The FindTextResult object</h2>
+        <h2>The ResultMatch object</h2>
       </section>
 
       <section>
@@ -342,11 +345,7 @@
           This interface represents an object which allows for the discovery of arbitrary selections of a document based on criteria set out in its attributes. The constructor takes an optional property object to set the selecotr attributes. The results of the FindText object's search are obtained through iterative execution of the <code>search()</code> method.
         </p>
 
-        <p class="note">
-          Currently, this API uses attributes to set selectors. I considered using chaining setter methods, which would allow for multiple parameters for each selector, and specific confidence ratings for each selector. However, that approach wouldn't let you initialize the object with a property object, nor allow easy object introspection. Feedback welcome.
-        </p>
-
-        <dl title='[Constructor(optional FindTextArgs args)] interface FindText : EventTarget' class='idl' data-merge="FindTextState FindTextResult FindTextArgs caseFoldingType UnicodeEquivalenceType">
+        <dl title='[Constructor(optional FindTextArgs args)] interface FindText : EventTarget' class='idl' data-merge="FindTextState ResultMatch ResultMatchAll FindTextArgs caseFoldingType UnicodeEquivalenceType">
           <dt>
             attribute DOMString text
           </dt>
@@ -446,8 +445,9 @@
           <dd>
             <p>
               A range object, as the starting point for the selection search.
+
               <p class="issue">
-                Do we really need both <code>scopeRange</code> and <code>startRange</code>? Couldn't an application define a <code>scopeRange</code> using a <code>startRange</code> and extending it to the end of the document?
+                Do we really need both <code>cursor</code> and <code>startRange</code>? Working with an index would be easier than working with a range, and I'm not sure what having a range gets us.
               </p>
             </p>
           </dd>
@@ -457,7 +457,7 @@
           </dt>
           <dd>
             <p>
-              A boolean representing whether a search MUST ignore the case of the characters when doing match comparison. The default value MUST be true.
+              A boolean representing whether a search MUST ignore the case of the characters when doing match comparison. The default value MUST be <code>true</code>.
             </p>
           </dd>
 
@@ -488,9 +488,6 @@
               This needs to be balanced with other kinds of fuzzy matches, such as case-folding and edit distance.
             </p>
 
-            <p class="issue">
-              Define how these matches affect the rank or confidence of the return result.
-            </p>
           </dd>
 
           <dt>
@@ -498,7 +495,7 @@
           </dt>
           <dd>
             <p>
-              A boolean representing whether a search MUST require that the search string be surrounded by non-word characters. The default value MUST be false.
+              A boolean representing whether a search MUST require that the search string be surrounded by non-word characters. The default value MUST be <code>false</code>.
             </p>
 
             <p class="issue">
@@ -515,29 +512,86 @@
           </dt>
           <dd>
             <p>
-              A boolean representing whether a search MUST begin again at the beginning (or end, depending on search direction) of the <a>search tree</a>. The default value MUST be false.
+              A boolean representing whether a search MUST begin again at the beginning (or end, depending on search direction) of the <a>search tree</a>. The default value MUST be <code>false</code>.
             </p>
           </dd>
+
           <dt>
-            Promise≺FindTextResult≻ search(optional boolean forward)
+            attribute unsigned long cursor
           </dt>
           <dd>
             <p>
-              Executes the search, based on the current selection criteria attributes, from the current <a>search cursor</a> position within the document serialization. The return result MUST be a <code>Promise</code> of a <a>FindTextResult</a> object with properties defined as follows:
+              An unsigned long indicating the current search index position in the <a>searchContent</a>. The default value MUST be <code>0</code>.
+            </p>
+
+            <p class="issue">
+              I think this should be exposed, for extensibility and low-level access, but I'm open to arguments against it.
+            </p>
+          </dd>
+
+          <dt>
+            readonly attribute DOMString searchContent
+          </dt>
+          <dd>
+            <p>
+              The stringified and normalized content of the <a>search tree</a>.
+            </p>
+
+            <p class="issue">
+              I think this should be exposed, for extensibility and low-level access, but I'm open to arguments against it. Note that this would be a really long string, in many cases!
+            </p>
+          </dd>
+
+          <dt>
+            readonly attribute DOMString sourceMap
+          </dt>
+          <dd>
+            <p>
+              The mapping between the <a>document</a> and the <a>searchContent</a>.
+            </p>
+
+            <p class="issue">
+              I think this should be exposed, for extensibility and low-level access, but I'm open to arguments against it.
+            </p>
+
+            <p class="issue">
+              I have no idea what this would actually look like! Probably JSON (which I don't know how to indicate in WebIDL), but otherwise completely undefined for now. :sadpanda:
+            </p>
+          </dd>
+          
+          <dt>
+            Promise≺ResultMatch≻ search(optional boolean forward)
+          </dt>
+          <dd>
+            <p>
+              Executes the search, based on the current selection criteria attributes, from the current <a>search cursor</a> position within the document serialization. The return result MUST be a <code>Promise</code> of a <a>ResultMatch</a> object with properties defined as follows:
             </p>
             <ul>
               <li>
-                If a match is found for the current selection criteria, the value of the <a>range</a> property MUST be a <code>Range</code> object that contains the target string or DOM structure, and the value of the <a>confidence</a> property MUST be a postive value as described <i>in the upcoming section on magical ways to determine a confidence value on the results, probably something to do with the edit distance and how many criteria failed or something</i>.
+                If a match is found for the current selection criteria, the value of the <a>range</a> property MUST be a <code>Range</code> object that contains the target string or DOM structure.
               </li>
               
               <li>
-                If no match is found for the current selection criteria, the value of the <code>range</code> property MUST be <code>null</code>., and the value of the <code>confidence</code> property MUST be <code>0</code>.
+                If no match is found for the current selection criteria, the value of the <code>range</code> property MUST be <code>null</code>.
               </li>
             </ul>
-
-            <p class="issue">
-              TODO: Add algorithm that describes the <a>search operation</a>, the setting of the <a>search cursor</a> position, evaluation of each search criterion, and so on. Maybe that's in a later section of the spec?
+          
+          <dt>
+            Promise≺ResultMatchAll≻ searchAll(optional boolean forward)
+          </dt>
+          <dd>
+            <p>
+              Executes the search, based on the current selection criteria attributes, from the current <a>search cursor</a> position within the document serialization. The return result MUST be a <code>Promise</code> of a <a>ResultMatchAll</a> object with properties defined as follows:
             </p>
+            <ul>
+              <li>
+                If a match is found for the current selection criteria, the value of the <a>range</a> property MUST be an array of <code>Range</code> objects that contains the target string or DOM structure.
+              </li>
+              
+              <li>
+                If no match is found for the current selection criteria, the value of the <code>range</code> property MUST be <code>null</code>.
+              </li>
+            </ul>
 
             <dl class="parameters">
               <dt>
@@ -545,7 +599,7 @@
               </dt>
               <dd>
                 <p>
-                  This parameter indicates whether the search should proceed in forward (positive) direction from the current <a>search cursor</a>, or in a reverse (negative) direction. The default value MUST be true.
+                  This parameter indicates whether the search should proceed in forward (positive) direction from the current <a>search cursor</a>, or in a reverse (negative) direction. The default value MUST be <code>true</code>.
                 </p>
                 <p>
                   If the value is <code>true</code>, the search MUST continue in a positive direction along the character or DOM serialization, from the start of the document toward the end, beginning at the current <a>search cursor</a>.
@@ -696,13 +750,37 @@
           </dt>
         </dl>
 
-        <dl title='dictionary FindTextResult' class='idl'>
+        <dl title='dictionary ResultMatch' class='idl'>
           <dt>
-            Range? range
+            Range? result
           </dt>
           <dd>
             <p>
               A <a href="http://www.w3.org/TR/dom/#range">DOM Range object</a>, as defined in [[!DOM4]]. If no match is found, the value MUST be <code>null</code>.
+            </p>
+          </dd>
+
+          <dt>
+            dictionary FindTextArgs
+          </dt>
+          <dd>
+            <p>
+              A dictionary object which contains all the parameters used in the search.
+            </p>
+
+            <p>
+              <a>FindTextArgs</a> MUST include entries for all available parameters, and MUST include default values for any parameter not explicitly set in the FindText object.
+            </p>
+          </dd>
+        </dl>
+
+        <dl title='dictionary ResultMatchAll' class='idl'>
+          <dt>
+            Array result
+          </dt>
+          <dd>
+            <p>
+              An array of <a href="http://www.w3.org/TR/dom/#range">DOM Range object</a>s, as defined in [[!DOM4]]. If no match is found, the array must be empty.
             </p>
           </dd>
 
@@ -796,7 +874,7 @@
       </p>
 
       <p class="issue">
-        Should this find "hidden" content, such as text that is <code>display:none</code> or  <code>visibility:none</code>?
+        Should this find "hidden" content, such as text that is <code>display:none</code> or <code>visibility:none</code>?
       </p>
 
       <p class="issue">
@@ -863,7 +941,7 @@
         <li>If the <a>user agent</a> does not support searching the <a>document</a> using <a>FindText</a>,
           return a <a>Promise</a> rejected with a
           <code>DOMException</code> whose name is
-          <code>NotSupportedError</code> and End these steps.
+          <code>NotSupportedError</code> and halt these steps.
         </li>
         <li>The following sub-steps MAY be run asynchronously for performance
         reasons, for example, if the <a>user agent</a> has <a title=
@@ -874,7 +952,7 @@
             <li>For each <a data-link-type="dfn" class="internalDFN" href="#dfn-browsing-context">browsing context</a> in <var>browsing contexts</var>, run the following sub-steps:
               <ol>
                 <li>Let <var>doc</var> be the <a data-link-type="dfn" class="internalDFN" href="#dfn-browsing-context">browsing context</a>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-active-document">active document</a>.</li>
-                <li>If <var>doc</var> is not visible per [<cite><a href="#bib-PAGE-VISIBILITY" class="bibref">PAGE-VISIBILITY</a></cite>], End these steps.</li>
+                <li>If <var>doc</var> is not visible per [<cite><a href="#bib-PAGE-VISIBILITY" class="bibref">PAGE-VISIBILITY</a></cite>], halt these steps.</li>
 
 
                 <!-- prep promise -->
@@ -909,6 +987,7 @@
                     Note that this will not allow users to search for CSS-injected content, as currently defined. This is unintuitive, and may not match browser find-in-page behavior.
                   </p>
                 </li>
+                <li>Let <var>source map</var> be the mapping between each element boundary in <var>doc</var> and the corresponding character position in <var>search content</var>.</li>
 
 
                 <!-- prep target text -->
@@ -927,6 +1006,8 @@
                   </p>
 
                 </li>
+                <li>Update <var>source map</var> to reflect the new character positions in <var>search content</var>.</li>
+
                 <li>If <a>unicodeNormalization</a> is not <code>null</code> or the value is not <code>none</code>:
                   <ol>
                     <li>If the value of <a>unicodeNormalization</a> is <code>canonical</code>, convert all characters in the <var>search content</var> and <var>target text</var> their Unicode equivalents using canonical (NFC/NFD) Unicode equivalence of characters.</li>
@@ -941,15 +1022,24 @@
                     Consider exposing unicode normalization operations as a separate method.
                   </p>
                 </li>
+                <li>Update <var>source map</var> to reflect the new character positions in <var>search content</var>.</li>
 
                 <!-- set search cursor -->
                 <li>Let <a>search cursor</a> be the current character position within <var>search content</var>.</li>
-                <li>Set <a>search cursor</a> to 0.</li>
-                <li>If <a>startRange</a> is not <code>null</code>:
+                <li>If this is the first initialization of the search execution:
                   <ol>
-                    <li>If the starting point of <a>startRange</a> is found within <var>search content</var>, set the <a>search cursor</a> to the start of the start range.</li>
+                    <li>Set <a>search cursor</a> to 0.</li>
+                    <li>If <a>startRange</a> is not <code>null</code>:
+                      <ol>
+                        <li>If the starting point of <a>startRange</a> is found within <var>search content</var>, set the <a>search cursor</a> to the start of the start range.</li>
+                      </ol>
+                    </li>                    
                   </ol>
+                  <p class="issue">
+                    Find a clearer way to explain that the cursor position remains active between executions of the <code>search()</code> method, e.g. it's iterable. We don't want this to be idempotent.
+                  </p>
                 </li>
+                <li>Let <a>search cursor starting position</a> be <a>search cursor</a>.</li>
 
                 <!-- start search operation -->
 
@@ -959,6 +1049,20 @@
 
                 <li>Increment <a>search cursor</a> by 1 character until the <a>search cursor</a> is positioned on the last character in <var>search content</var>; for each increment:
                   <ol>
+                    <li>If <a>wrap</a> is <code>true</code> and <a>search cursor</a> is <a>search cursor starting position</a>:
+                      <ol>
+                        <li>If execution method is <a>searchAll</a>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.</li>
+                      </ol>
+                      <li>Halt this algorithm.</li>
+                    </li>
+
+                    <li>If execution method is <a>searchAll</a>:
+                      <ol>
+                        <li>Resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.</li>
+                        <li>Halt this algorithm.</li>
+                      </ol>
+                    </li>
+
                     <!-- text search operation -->
                     <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>text match length</var> plus the value of <a>textDistance</a>, starting at the current <a>search cursor</a>.</li>
                     <li>Apply <var><a href="#text_match_algorithm">text match algorithm</a></var>:
@@ -988,19 +1092,25 @@
                                           
                                           <!-- match found, find range -->                                   
                                           <ol>
-                                            <li>Let <var>result</var> be a <a>FindTextResult</a>.</li>
+                                            <!-- <li>Let <var>result</var> be a <a>ResultMatch</a>.</li> -->
+                                            <li>If execution method is <a>search</a>, let <var>result</var> be <a>DOM range object</a>.</li>
+                                            <li>If execution method is <a>searchAll</a>, let <var>result</var> be an array of <a>DOM range object</a>s.</li>
                                             <li>Let <var>range</var> be a <a>DOM range object</a> in <var>result</var>.</li>
-                                            <li>Set <var>range</var> to a <code>range</code> in <var>doc</var> corresponding to <var>matching candidate text</var>.
+                                            <li>Set <var>range</var> to a <code>range</code> in <var>doc</var> corresponding to <var>matching candidate text</var>, using <var>source map</var>.
                                               <p class="issue">
                                                 Probably needs more detail. :P
                                               </p>
                                             </li>
-                                            <li>Resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.
-                                              <p class="issue">
-                                                Should return cursor position also.
-                                              </p>
+                                            <li>If execution method is <a>search</a>:
+                                              <ol>
+                                                <li>Resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.
+                                                  <p class="issue">
+                                                    Should return cursor position also.
+                                                  </p>
+                                                </li>
+                                                <li>Halt this algorithm.</li>
+                                              </ol>
                                             </li>
-                                            <li>End this algorithm.</li>
                                           </ol>
                                           
                                         </li>
@@ -1022,7 +1132,12 @@
                             Define <code>MATCH NOT FOUND</code>, or find a better return value.
                           </p>
                         </li> 
-                        <li>End this algorithm.</li>
+                        <li>If <a>wrap</a> is <code>true</code> and <a>search cursor starting position</a> is not <code>0</code>, set <a>search cursor</a> to <code>0</code>. Otherwise:
+                          <ol>
+                            <li>If execution method is <a>searchAll</a>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.</li>
+                            <li>Halt this algorithm.</li>                           
+                          </ol>
+                        </li>
                       </ol>
                     </li>
                  
@@ -1059,13 +1174,14 @@ The return results are prepared by first reconciling the matched string with its
         <li>If <var>candidate text</var> and <a>text</a> contain an identical sequence of codepoints for the length of <var>target text match length</var>: 
           <ol>
             <li>Set <var>match text</var> to <var>candidate text</var>.</li>
-            <li>Return <var>match text</var> and End this algorithm.</li>
+            <li>Return <var>match text</var> and halt this algorithm.</li>
           </ol>
         </li>
+        <li>If <a>wholeWord</a> is <code>true</code>, halt this algorithm.</li>
         <li>If <var>candidate text</var> and <a>text</a> match in a comparison using the <a>Calculating Edit Distance Algorithm</a>: 
           <ol>
             <li>Set <var>match text</var> to <var>candidate text</var>.</li>
-            <li>Return <var>match text</var> and End this algorithm.</li>
+            <li>Return <var>match text</var> and halt this algorithm.</li>
           </ol>
         </li>
       </ol>
@@ -1238,7 +1354,7 @@ Text interface
     DOMString Text.collapseWhitespace();
     DOMString Text.stringify( Element );
     DOMString Text.foldUnicode( DOMString text, UnicodeEquivalenceType);
-    Promise≺FindTextResult≻ Text.search (
+    Promise≺ResultMatch≻ Text.search (
                                     attribute DOMString              searchContent;
                                     attribute DOMString              text;
                                     attribute unsigned short         textDistance;
@@ -1263,7 +1379,7 @@ Text interface
     <section class='appendix'>
       <h2>Acknowledgements</h2>
       <p>
-        Special thanks to Cameron McCormack (Mozilla), Kristof Csillag (Hypothes.is), Randall Leeds (Hypothes.is), Dan Whaley (Hypothes.is), Mitar Milutinovic (UC-Berkeley), Jake Hartnell (UC-Berkeley, EPUB.js), Nick Stenning (Hypothes.is), Benjamin Young (Hypothes.is), Mike de Boer (Mozilla), Travis Leithead (Microsoft), Ryosuke Niwa (Apple), Josh Soref (Blackberry), Rob Sanderson (Stanford), Paolo Ciccarese (Mass General Hospital / Harvard), Takeshi Kanai (Sony), Ivan Herman (W3C), Robin Berjon (W3C), Mike™ Smith (W3C), Addison Phillips (Amazon) and Richard Ishida (W3C) for internationalization insight, Mounir Lamouri (Google) and Marcos Cáceres (Mozilla) for writing a spec I could plunder mechanics, Peter Brantley (for putting on the Books in Browsers conference), and the entire Web Annotation Working Group and Open Annotations Community Group for discussion and insight. If I've forgotten anyone, please remind me; I'm truly grateful for all the discussions I've had on this topic.
+        Special thanks to Cameron McCormack (Mozilla); Kristof Csillag (Hypothes.is); Randall Leeds (Hypothes.is); Dan Whaley (Hypothes.is); Mitar Milutinovic (UC-Berkeley); Jake Hartnell (UC-Berkeley, EPUB.js); Nick Stenning (Hypothes.is); Benjamin Young (Hypothes.is); Mike de Boer (Mozilla); Travis Leithead (Microsoft); Ryosuke Niwa (Apple); Josh Soref (Blackberry); Rob Sanderson (Stanford); Paolo Ciccarese (Mass General Hospital / Harvard); Takeshi Kanai (Sony); Ivan Herman (W3C); Robin Berjon (W3C); Mike™ Smith (W3C); Addison Phillips (Amazon), Richard Ishida (W3C), and the rest of the I18n WG for internationalization insight; Alex Schmidtz (jQuery), Bill Hunt (OpenGov Foundation), and Chris Birk (OpenGov Foundation) for expertise on Promises; Mounir Lamouri (Google) and Marcos Cáceres (Mozilla) for writing a spec I could plunder mechanics; Peter Brantley (for putting on the Books in Browsers conference); and the entire Web Annotation Working Group and Open Annotations Community Group for discussion and insight. If I've forgotten anyone, please remind me; I'm truly grateful for all the discussions I've had on this topic.
       </p>
     </section>
     
