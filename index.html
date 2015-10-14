@@ -351,7 +351,7 @@
     </section>
 
     <section id="findtextapi">
-      <h2 id="api">
+      <h2 id="findtext-api">
         The FindText API
       </h2>
       <p>
@@ -844,7 +844,7 @@
 
 
     <section>
-      <h2 id="api">
+      <h2 id="editdistance-api">
         The EditDistance Interface
       </h2>
       <p>The EditDistance API defines a method to calculate the minimum <a>edit distance</a> between any two strings. This method uses the Levenshtein Distance algorithm, with the following operations:</p>
@@ -1009,7 +1009,7 @@
                     This conflates the notion of range and DOM tree. Find a better way to set the <var>search tree</var> to the <code>scope</code>.
                   </p>
                 </li>
-                <li>Let <var>search content</var> be the result of applying the <a href="http://www.w3.org/TR/dom/#dom-node-textcontent">[[!DOM4]] <code>textContent</code> attribute algorithm</a> algorithm to the <var>search tree</var>.
+                <li>Let <var>search content</var> be the result of applying the [[!DOM4]] <a href="http://www.w3.org/TR/dom/#dom-node-textcontent"><code>textContent</code> attribute algorithm</a> algorithm to the <var>search tree</var>.
                   <p class="issue">
                     Note that this will not allow users to search for CSS-injected content, as currently defined. This is unintuitive, and may not match browser find-in-page behavior.
                   </p>
