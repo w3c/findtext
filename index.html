@@ -31,16 +31,16 @@
         otherLinks: [{
             key: 'Participate',
             data: [{
-                value: 'We are on Github.',
+                value: 'Github Repository',
                 href: 'https://github.com/w3c/findtext'
             }, {
-                value: 'File a bug.',
+                value: 'File a bug',
                 href: 'https://github.com/w3c/findtext/issues'
             }, {
-                value: 'Commit history.',
+                value: 'Commit history',
                 href: 'https://github.com/w3c/findtext/commits/gh-pages'
             }, {
-                value: 'Mailing list.',
+                value: 'Mailing list',
                 href: 'https://lists.w3.org/Archives/Public/public-annotation/'
             }]
         }], 
@@ -70,7 +70,7 @@
   <body>
     <section id='abstract' class="informative">
       <p>
-        This specification describes an API for finding ranges of text in a document or part of a document, using a variety of selection criteria.
+        The FindText API specification describes an API for finding ranges of text in a document or part of a document, using a variety of selection criteria.
       </p>
 
       <p class="note">
@@ -87,7 +87,7 @@
         Feedback on this specification can be made via annotations. All annotations are archived on the <a rel="reply-to" href="mailto:public-annotation@w3.org">public-annotation@w3.org</a> mailing list (<a href="http://lists.w3.org/Archives/Public/public-annotation/">archives</a>), and on the searchable <a href="https://notes.webplatform.org/stream">WebPlatform Notes stream</a>; see more details on <a href="https://notes.webplatform.org/">Notes.WebPlatform.org</a>. <b>Note:</b> To create annotations, you must have a <a href="https://accounts.webplatform.org/">WebPlatform.org account</a>; do not use your W3C credentials.
       </p>
 
-      <p>This document is published jointly by the <a href="http://www.w3.org/2008/webapps/">Web Applications Working Group</a> and the <a href="http://www.w3.org/annotation/">Web Annotation Woring Group</a>.</p>
+      <p>This document is published jointly by the <a href="http://www.w3.org/annotation/">Web Annotation Woring Group</a> and the <a href="http://www.w3.org/WebPlatform/WG/">Web Platform Working Group</a>.</p>
     </section>
     
     <section class="informative">
@@ -320,7 +320,7 @@
           </p>
 
           <p class="issue">
-            Would this be clearer if it were named <a>search index</a>?
+            Would this be clearer if it were named <code>search index</code>?
           </p>
         </dd>
 
@@ -376,7 +376,7 @@
               A text string to be searched for. <b>Note:</b> This string is equivalent to the <code>textContent</code> of a DOM node.
             </p>
 
-            <p>The default value of the <a>text</a> attribute MUST be the empty string.</p>
+            <p>The default value of the <code>text</code> attribute MUST be the empty string.</p>
           </dd>
 
           <dt>
@@ -384,12 +384,12 @@
           </dt>
           <dd>
             <p>
-              The <a href="#edit_distance">edit distance</a> tolerance for the <a>text</a> attribute string. 
+              The <a href="#edit_distance">edit distance</a> tolerance for the <code>text</code> attribute string. 
             </p>
 
-            <p>The default value of the <a>textDistance</a> attribute MUST be <code>0</code>.</p>
+            <p>The default value of the <code>textDistance</code> attribute MUST be <code>0</code>.</p>
 
-            <p>If the value of the <a>text</a> attribute is the empty string, the <a>textDistance</a> attribute MUST use the default value.</p>
+            <p>If the value of the <code>text</code> attribute is the empty string, the <code>textDistance</code> attribute MUST use the default value.</p>
           </dd>
 
           <dt>
@@ -400,7 +400,7 @@
               A text string of arbitrary length (often 32 characters) that precedes the target string.
             </p>
 
-            <p>The default value of the <a>prefix</a> attribute MUST be the empty string.</p>
+            <p>The default value of the <code>prefix</code> attribute MUST be the empty string.</p>
 
             <p class="issue">
               Include link to study that shows optimal distance for character prefixes?
@@ -412,12 +412,12 @@
           </dt>
           <dd>
             <p>
-              The <a href="#edit_distance">edit distance</a> tolerance for the <a>prefix</a> attribute string. 
+              The <a href="#edit_distance">edit distance</a> tolerance for the <code>prefix</code> attribute string. 
             </p>
 
-            <p>The default value of the <a>prefixDistance</a> attribute MUST be <code>0</code>.</p>
+            <p>The default value of the <code>prefixDistance</code> attribute MUST be <code>0</code>.</p>
 
-            <p>If the value of the <a>prefix</a> attribute is the empty string, the <a>prefixDistance</a> attribute MUST use the default value.</p>
+            <p>If the value of the <code>prefix</code> attribute is the empty string, the <code>prefixDistance</code> attribute MUST use the default value.</p>
           </dd>
 
           <dt>
@@ -428,7 +428,7 @@
               A text string of arbitrary length (often 32 characters) that follows the target string.
             </p>
 
-            <p>The default value of the <a>suffix</a> attribute MUST be the empty string.</p>
+            <p>The default value of the <code>suffix</code> attribute MUST be the empty string.</p>
 
             <p class="issue">
               Include link to study that shows optimal distance for character suffixes?
@@ -440,12 +440,12 @@
           </dt>
           <dd>
             <p>
-              The <a href="#edit_distance">edit distance</a> tolerance for the <a>suffix</a> attribute string. 
+              The <a href="#edit_distance">edit distance</a> tolerance for the <code>suffix</code> attribute string. 
             </p>
 
-            <p>The default value of the <a>suffixDistance</a> attribute MUST be <code>0</code>.</p>
+            <p>The default value of the <code>suffixDistance</code> attribute MUST be <code>0</code>.</p>
 
-            <p>If the value of the <a>suffix</a> attribute is the empty string, the <a>suffixDistance</a> attribute MUST use the default value.</p>
+            <p>If the value of the <code>suffix</code> attribute is the empty string, the <code>suffixDistance</code> attribute MUST use the default value.</p>
           </dd>
 
           <dt>
@@ -920,7 +920,7 @@
         whose associated operation is to search the document.
       </p>
       <p>
-        When <a title="queue a task">queuing a task</a>, the <dfn>find text task source</dfn> is used.
+        When <dfn>queuing a task</dfn>, the <dfn>find text task source</dfn> is used.
       </p>    
     </section>
 
@@ -965,10 +965,7 @@
           <code>DOMException</code> whose name is
           <code>NotSupportedError</code> and halt these steps.
         </li>
-        <li>The following sub-steps MAY be run asynchronously for performance
-        reasons, for example, if the <a>user agent</a> has <a title=
-        'browsing context'>browsing contexts</a> living in different
-        processes:
+        <li>The following sub-steps MAY be run asynchronously for performance reasons, for example, if the <a>user agent</a> has <dfn>browsing contexts</dfn> living in different processes:
           <ol>
             <li>Let <var>browsing contexts</var> be the <a>list of the descendant browsing contexts</a> of the <a>top-level browsing context</a>'s <a>document</a>.</li>
             <li>For each <a data-link-type="dfn" class="internalDFN" href="#dfn-browsing-context">browsing context</a> in <var>browsing contexts</var>, run the following sub-steps:
@@ -991,17 +988,17 @@
                 <!-- prep search content -->
                 <li>Let <var>search tree</var> be the active target portion of <var>doc</var>.</li>
                 <li>Set initial value of <var>search tree</var> to <var>doc</var>.</li>
-                <li>If <a>scope</a> is not <code>null</code>:
+                <li>If <code>scope</code> is not <code>null</code>:
                   <ol>
-                    <li>If the value of <a>scope</a> is found within <var>doc</var>, set the value of <var>search tree</var> to the value of <a>scope</a>.</li>
-                    <li>If the value of <a>scope</a> is not found within <var>doc</var>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <code>NOT FOUND</code>.
+                    <li>If the value of <code>scope</code> is found within <var>doc</var>, set the value of <var>search tree</var> to the value of <code>scope</code>.</li>
+                    <li>If the value of <code>scope</code> is not found within <var>doc</var>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <code>NOT FOUND</code>.
                       <p class="issue">
                         Define <code>NOT FOUND</code>, or find a better return value.
                       </p>
                     </li> 
                   </ol>
                   <p class="issue">
-                    This conflates the notion of range and DOM tree. Find a better way to set the <var>search tree</var> to the <a>scope</a>.
+                    This conflates the notion of range and DOM tree. Find a better way to set the <var>search tree</var> to the <code>scope</code>.
                   </p>
                 </li>
                 <li>Let <var>search content</var> be the result of applying the <a href="http://www.w3.org/TR/dom/#dom-node-textcontent">[[!DOM4]] <code>textContent</code> attribute algorithm</a> algorithm to the <var>search tree</var>.
@@ -1013,14 +1010,14 @@
 
 
                 <!-- prep target text -->
-                <li>Let <var>target text</var> be the discrete values of <a>text</a>, <a>prefix</a>, and <a>suffix</a>.</li>
+                <li>Let <var>target text</var> be the discrete values of <code>text</code>, <code>prefix</code>, and <code>suffix</code>.</li>
 
                 <!-- set internalization parameters -->
                 <li>Collapse all consecutive sequences of any <a>whitespace character</a> into a single U+0020 (space) character, in the <var>search content</var> and <var>target text</var>.</li>
-                <li>If <a>caseFolding</a> is not <code>null</code> or the value is not <code>none</code>:
+                <li>If <code>caseFolding</code> is not <code>null</code> or the value is not <code>none</code>:
                   <ol>
-                    <li>If the value of <a>caseFolding</a> is <code>ascii</code>, map all code points in the range 0x41 to 0x5A (A to Z) to the corresponding code points in the range 0x61 to 0x7A (a to z), in the <var>search content</var> and <var>target text</var>.</li>
-                    <li>If the value of <a>caseFolding</a> is <code>unicode</code>, map all code points to their Unicode C+F case fold equivalents, in the <var>search content</var> and <var>target text</var>.</li>
+                    <li>If the value of <code>caseFolding</code> is <code>ascii</code>, map all code points in the range 0x41 to 0x5A (A to Z) to the corresponding code points in the range 0x61 to 0x7A (a to z), in the <var>search content</var> and <var>target text</var>.</li>
+                    <li>If the value of <code>caseFolding</code> is <code>unicode</code>, map all code points to their Unicode C+F case fold equivalents, in the <var>search content</var> and <var>target text</var>.</li>
                   </ol>
 
                   <p class="issue">
@@ -1030,11 +1027,11 @@
                 </li>
                 <li>Update <var>source map</var> to reflect the new character positions in <var>search content</var>.</li>
 
-                <li>If <a>unicodeNormalization</a> is not <code>null</code> or the value is not <code>none</code>:
+                <li>If <code>unicodeNormalization</code> is not <code>null</code> or the value is not <code>none</code>:
                   <ol>
-                    <li>If the value of <a>unicodeNormalization</a> is <code>canonical</code>, convert all characters in the <var>search content</var> and <var>target text</var> their Unicode equivalents using canonical (NFC/NFD) Unicode equivalence of characters.</li>
-                    <li>If the value of <a>unicodeNormalization</a> is <code>compatibility</code>, convert all characters in the <var>search content</var> and <var>target text</var> their Unicode equivalents using compatibility (NFKC/NFKD) Unicode equivalence of characters.</li>
-                    <li>If the value of <a>unicodeNormalization</a> is <code>all</code>, …
+                    <li>If the value of <code>unicodeNormalization</code> is <code>canonical</code>, convert all characters in the <var>search content</var> and <var>target text</var> their Unicode equivalents using canonical (NFC/NFD) Unicode equivalence of characters.</li>
+                    <li>If the value of <code>unicodeNormalization</code> is <code>compatibility</code>, convert all characters in the <var>search content</var> and <var>target text</var> their Unicode equivalents using compatibility (NFKC/NFKD) Unicode equivalence of characters.</li>
+                    <li>If the value of <code>unicodeNormalization</code> is <code>all</code>, …
                       <p class="issue">
                         Is there a good way to handle this?
                       </p>
@@ -1051,9 +1048,9 @@
                 <li>If this is the first initialization of the search execution:
                   <ol>
                     <li>Set <a>search cursor</a> to 0.</li>
-                    <li>If <a>startRange</a> is not <code>null</code>:
+                    <li>If <code>startRange</code> is not <code>null</code>:
                       <ol>
-                        <li>If the starting point of <a>startRange</a> is found within <var>search content</var>, set the <a>search cursor</a> to the start of the start range.</li>
+                        <li>If the starting point of <code>startRange</code> is found within <var>search content</var>, set the <a>search cursor</a> to the start of the start range.</li>
                       </ol>
                     </li>                    
                   </ol>
@@ -1061,24 +1058,24 @@
                     Find a clearer way to explain that the cursor position remains active between executions of the <code>search()</code> method, e.g. it's iterable. We don't want this to be idempotent.
                   </p>
                 </li>
-                <li>Let <a>search cursor starting position</a> be <a>search cursor</a>.</li>
+                <li>Let <code>search cursor starting position</code> be <a>search cursor</a>.</li>
 
                 <!-- start search operation -->
 
-                <li>Let <var>text match length</var> be the number of Unicode codepoints in <a>text</a>.</li>
-                <li>Let <var>prefix match length</var> be the number of Unicode codepoints in <a>prefix</a>.</li>
-                <li>Let <var>suffix match length</var> be the number of Unicode codepoints in <a>suffix</a>.</li>
+                <li>Let <var>text match length</var> be the number of Unicode codepoints in <code>text</code>.</li>
+                <li>Let <var>prefix match length</var> be the number of Unicode codepoints in <code>prefix</code>.</li>
+                <li>Let <var>suffix match length</var> be the number of Unicode codepoints in <code>suffix</code>.</li>
 
                 <li>Increment <a>search cursor</a> by 1 character until the <a>search cursor</a> is positioned on the last character in <var>search content</var>; for each increment:
                   <ol>
-                    <li>If <a>wrap</a> is <code>true</code> and <a>search cursor</a> is <a>search cursor starting position</a>:
+                    <li>If <code>wrap</code> is <code>true</code> and <a>search cursor</a> is <code>search cursor starting position</code>:
                       <ol>
-                        <li>If execution method is <a>searchAll</a>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.</li>
+                        <li>If execution method is <code>searchAll</code>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.</li>
                       </ol>
                       <li>Halt this algorithm.</li>
                     </li>
 
-                    <li>If execution method is <a>searchAll</a>:
+                    <li>If execution method is <code>searchAll</code>:
                       <ol>
                         <li>Resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.</li>
                         <li>Halt this algorithm.</li>
@@ -1086,44 +1083,44 @@
                     </li>
 
                     <!-- text search operation -->
-                    <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>text match length</var> plus the value of <a>textDistance</a>, starting at the current <a>search cursor</a>.</li>
+                    <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>text match length</var> plus the value of <code>textDistance</code>, starting at the current <a>search cursor</a>.</li>
                     <li>Apply <var><a href="#text_match_algorithm">text match algorithm</a></var>:
                       <ol>
-                        <li>Set <var>target text</var> to <a>text</a>.</li>
-                        <li>Set <var>candidate text</var> to <a>candidate text subset</a>.</li>
-                        <li>If <a>text</a> and <a>candidate text subset</a> are a match:
+                        <li>Set <var>target text</var> to <code>text</code>.</li>
+                        <li>Set <var>candidate text</var> to <code>candidate text subset</code>.</li>
+                        <li>If <code>text</code> and <code>candidate text subset</code> are a match:
                           <ol>
                             <li>Let <var>matching candidate text</var> be <var>candidate text subset</var>.</li>
                             
                             <!-- prefix search operation -->
-                            <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>prefix match length</var> plus the value of <a>prefixDistance</a>, starting at the current <a>search cursor</a> minus the <var>prefix match length</var>.</li>
+                            <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>prefix match length</var> plus the value of <code>prefixDistance</code>, starting at the current <a>search cursor</a> minus the <var>prefix match length</var>.</li>
                             <li>Apply <var><a href="#text_match_algorithm">text match algorithm</a></var>:
                               <ol>
-                                <li>Set <var>target text</var> to <a>prefix</a>.</li>
-                                <li>Set <var>candidate text</var> to <a>candidate text subset</a>.</li>
-                                <li>If <a>prefix</a> and <a>candidate text subset</a> are a match:
+                                <li>Set <var>target text</var> to <code>prefix</code>.</li>
+                                <li>Set <var>candidate text</var> to <code>candidate text subset</code>.</li>
+                                <li>If <code>prefix</code> and <code>candidate text subset</code> are a match:
                                   <ol>
 
                                     <!-- suffix search operation -->
-                                    <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>suffix match length</var> plus the value of <a>prefixDistance</a>, starting at the current <a>search cursor</a> minus the <var>suffix match length</var>.</li>
+                                    <li>Let <var>candidate text subset</var> be the string consisting of the number of Unicode codepoints in <a>search content</a> equal to <var>suffix match length</var> plus the value of <code>prefixDistance</code>, starting at the current <a>search cursor</a> minus the <var>suffix match length</var>.</li>
                                     <li>Apply <var><a href="#text_match_algorithm">text match algorithm</a></var>:
                                       <ol>
-                                        <li>Set <var>target text</var> to <a>suffix</a>.</li>
-                                        <li>Set <var>candidate text</var> to <a>candidate text subset</a>.</li>
-                                        <li>If <a>suffix</a> and <a>candidate text subset</a> are a match:
+                                        <li>Set <var>target text</var> to <code>suffix</code>.</li>
+                                        <li>Set <var>candidate text</var> to <code>candidate text subset</code>.</li>
+                                        <li>If <code>suffix</code> and <code>candidate text subset</code> are a match:
                                           
                                           <!-- match found, find range -->                                   
                                           <ol>
                                             <!-- <li>Let <var>result</var> be a <a>ResultMatch</a>.</li> -->
-                                            <li>If execution method is <a>search</a>, let <var>result</var> be <a>DOM range object</a>.</li>
-                                            <li>If execution method is <a>searchAll</a>, let <var>result</var> be an array of <a>DOM range object</a>s.</li>
-                                            <li>Let <var>range</var> be a <a>DOM range object</a> in <var>result</var>.</li>
+                                            <li>If execution method is <code>search</code>, let <var>result</var> be <code>dom range object</code>.</li>
+                                            <li>If execution method is <code>searchAll</code>, let <var>result</var> be an array of <code>dom range object</code>s.</li>
+                                            <li>Let <var>range</var> be a <code>dom range object</code> in <var>result</var>.</li>
                                             <li>Set <var>range</var> to a <code>range</code> in <var>doc</var> corresponding to <var>matching candidate text</var>, using <var>source map</var>.
                                               <p class="issue">
                                                 Probably needs more detail. :P
                                               </p>
                                             </li>
-                                            <li>If execution method is <a>search</a>:
+                                            <li>If execution method is <code>search</code>:
                                               <ol>
                                                 <li>Resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.
                                                   <p class="issue">
@@ -1154,9 +1151,9 @@
                             Define <code>MATCH NOT FOUND</code>, or find a better return value.
                           </p>
                         </li> 
-                        <li>If <a>wrap</a> is <code>true</code> and <a>search cursor starting position</a> is not <code>0</code>, set <a>search cursor</a> to <code>0</code>. Otherwise:
+                        <li>If <code>wrap</code> is <code>true</code> and <code>search cursor starting position</code> is not <code>0</code>, set <a>search cursor</a> to <code>0</code>. Otherwise:
                           <ol>
-                            <li>If execution method is <a>searchAll</a>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.</li>
+                            <li>If execution method is <code>searchAll</code>, resolve <var>doc</var>'s <a data-link-type="dfn" class="internalDFN" href="#dfn-pending-promise">pending promise</a> with <var>result</var>.</li>
                             <li>Halt this algorithm.</li>                           
                           </ol>
                         </li>
@@ -1185,22 +1182,22 @@ The return results are prepared by first reconciling the matched string with its
       </ol>
 
       <h4>Text Match Algorithm</h4>
-      <p>The steps to <dfn>perform a text match operation</dfn> on a <a>two strings</a> using <a>FindText</a> are as follows:</p>
+      <p>The steps to <dfn>perform a text match operation</dfn> on a <code>two strings</code> using <a>FindText</a> are as follows:</p>
 
       <ol id="text_match_algorithm">
         <li>Let <var>target text</var> be the string to match.</li>
-        <li>Let <var>target text match length</var> be the number of Unicode codepoints in <a>target text</a>.</li>
+        <li>Let <var>target text match length</var> be the number of Unicode codepoints in <code>target text</code>.</li>
         <li>Let <var>edit distance</var> be the character count variance.</li>
         <li>Let <var>candidate text</var> be the string to compare to <var>target text</var>.</li>
         <li>Let <var>match text</var> be the <code>empty string</code>.</li>
-        <li>If <var>candidate text</var> and <a>text</a> contain an identical sequence of codepoints for the length of <var>target text match length</var>: 
+        <li>If <var>candidate text</var> and <code>text</code> contain an identical sequence of codepoints for the length of <var>target text match length</var>: 
           <ol>
             <li>Set <var>match text</var> to <var>candidate text</var>.</li>
             <li>Return <var>match text</var> and halt this algorithm.</li>
           </ol>
         </li>
-        <li>If <a>wholeWord</a> is <code>true</code>, halt this algorithm.</li>
-        <li>If <var>candidate text</var> and <a>text</a> match in a comparison using the <a>Calculating Edit Distance Algorithm</a>: 
+        <li>If <code>wholeWord</code> is <code>true</code>, halt this algorithm.</li>
+        <li>If <var>candidate text</var> and <code>text</code> match in a comparison using the <a href="edit_distance_algorithm">Calculating Edit Distance Algorithm</a>: 
           <ol>
             <li>Set <var>match text</var> to <var>candidate text</var>.</li>
             <li>Return <var>match text</var> and halt this algorithm.</li>
@@ -1215,7 +1212,7 @@ The return results are prepared by first reconciling the matched string with its
 
       <div class='note'>
         <h4>Calculating Edit Distance Algorithm summary</h4>
-        <p>The edit distance is calculated by first finding and comparing the matching sequence of codepoints in both strings, regardless of intervening extra characters. If the count of the mutual sequence of codepoint matches is within the user-defined tolerance limit (of <a>textDistance</a>, <a>prefixDistance</a>, and <a>suffixDistance</a>, respectively), then the string is considered a match using the change, insertion, or deletion operations.</p>
+        <p>The edit distance is calculated by first finding and comparing the matching sequence of codepoints in both strings, regardless of intervening extra characters. If the count of the mutual sequence of codepoint matches is within the user-defined tolerance limit (of <code>textDistance</code>, <code>prefixDistance</code>, and <code>suffixDistance</code>, respectively), then the string is considered a match using the change, insertion, or deletion operations.</p>
 
         <p>For example, the words <i>complete</i> and <i>computer</i> have the following mutual sequence of letters: <i>c</i>, <i>o</i>, <i>m</i>, <i>p</i>, <i>t</i>, and <i>e</i>. This pair has an edit distance of 3, because you must perform 3 operations: delete the <i>l</i>, change the <i>e</i> to an <i>u</i>, and add an <i>r</i>. So, a search for <i>complete</i> with an edit distance of 3 would also match <i>computer</i> (as well as more obvious matches like <i>completes</i>, <i>completed</i>, and <i>compete</i>).</p>
 
