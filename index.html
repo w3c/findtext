@@ -104,7 +104,7 @@
         Finding a text selection is a basic operation of a Web browser, but the functionality is not exposed to Web developers. The FindText API provides a way for developers to find text selections, with several options to refine more targeted and flexible searches, including fuzzy matching, in a way that works well with a variety of human languages.  
       </p>
       <p>
-        There are many different use cases for a custom mechanism for finding and navigating to a particular range of text in a Web document, such as [[!HTML5]] or [[!SVG]]. A developer may wish to design a webapp in which only the text in the active editing subtreee, and not the controls or other application text, is returned as a result of a search, overriding the native find-text functionality. A user may wish to highlight a particular passage, and link to it, even if that selection doesn't have a <code>id</code> attribute to serve as a fragment identifier. A designer may wish to find and style a range of text without changing the markup. A developer may wish to provide a particular text-matching algorithm for searching their specific type of content, to return more meaningful results (such as fuzzy matching or term substitution). A CMS developer may wish to allow advanced review and commenting on text selections for a collaborative document. All of these use cases share the a fundamental requirement for a API to find text.  
+        There are many different use cases for a custom mechanism for finding and navigating to a particular range of text in a Web document, such as [[!HTML5]] or [[!SVG]]. A developer may wish to design a webapp in which only the text in the active editing subtree, and not the controls or other application text, is returned as a result of a search, overriding the native find-text functionality. A user may wish to highlight a particular passage, and link to it, even if that selection doesn't have a <code>id</code> attribute to serve as a fragment identifier. A designer may wish to find and style a range of text without changing the markup. A developer may wish to provide a particular text-matching algorithm for searching their specific type of content, to return more meaningful results (such as fuzzy matching or term substitution). A CMS developer may wish to allow advanced review and commenting on text selections for a collaborative document. All of these use cases share the a fundamental requirement for a API to find text.  
       </p>
       <p>
         There are many challenges to finding text in a modern Web document. 
@@ -124,7 +124,7 @@
         Sometimes, a selection of a document may contain more than text, or no text at all. Such selections include a picture and its caption, the picture alone, a specific area of a picture, a point on a rendered map, or a range of time within timed media such as audio or video. Some of these examples can be fully expressed as a DOM range; others need supplementary characteristics, which may be application-specific, in order to be addressable.
       </p>
       <p>
-        The FindText API is intended to be flexible and performant. To ensure interoperability, this specification describes a default find-text algorithm, but this can be overriden by the developer. For flexibility in searches, this specification defines several parameterized selector methods, which can be applied in different ordered sequences to best match particular kinds of content, via method chaining, which will allow the developer to provide refined matching algorithms to customize the results.
+        The FindText API is intended to be flexible and performant. To ensure interoperability, this specification describes a default find-text algorithm, but this can be overridden by the developer. For flexibility in searches, this specification defines several parameterized selector methods, which can be applied in different ordered sequences to best match particular kinds of content, via method chaining, which will allow the developer to provide refined matching algorithms to customize the results.
 
         For performance reasons, the FindText API can be evoked iteratively, to find the next match in the document, rather than attempting to search the entire document for all matches.
       </p>
@@ -134,7 +134,7 @@
 
 
       <p class="note">
-        This specification defines the behavior for documents using a Unicode character encoding, such as UTF-8. Behavior for documents using legacy character encoding, such as <code>windows-1252</code>, may be anomolous.
+        This specification defines the behavior for documents using a Unicode character encoding, such as UTF-8. Behavior for documents using legacy character encoding, such as <code>windows-1252</code>, may be anomalous.
       </p>
       
       <p class="issue">
@@ -372,7 +372,7 @@
           The FindText Interface
         </h2>
         <p>
-          This interface represents an object which allows for the discovery of arbitrary selections of a document based on criteria set out in its attributes. The constructor takes an optional property object to set the selecotr attributes. The results of the FindText object's search are obtained through iterative execution of the <code>search()</code> method.
+          This interface represents an object which allows for the discovery of arbitrary selections of a document based on criteria set out in its attributes. The constructor takes an optional property object to set the selector attributes. The results of the FindText object's search are obtained through iterative execution of the <code>search()</code> method.
         </p>
 
         <dl title='[Constructor(optional FindTextArgs args)] interface FindText : EventTarget' class='idl' data-merge="FindTextState ResultMatch ResultMatchAll FindTextArgs caseFoldingType UnicodeEquivalenceType">
@@ -499,7 +499,7 @@
               A enumerated value representing whether a search MUST match exact characters, or use a particular Unicode character equivalence. The default value MUST be <code>none</code>.
             </p>
             <p> 
-              Canonical Equivalence is described in [[!UTS10]]. If the value of this attribute is true, the User Agent MUST follow the algorthim defined in section <a href="http://unicode.org/reports/tr10/#Searching">8 Searching and Matching</a>, with collations and contractions formed per section <a href="http://unicode.org/reports/tr10/#Collation_Folding">8.1 Collation Folding</a>, and secondary strength asymmetric search per section <a href="http://unicode.org/reports/tr10/#Asymmetric_Search">8.2 Asymmetric Search</a>.
+              Canonical Equivalence is described in [[!UTS10]]. If the value of this attribute is true, the User Agent MUST follow the algorithm defined in section <a href="http://unicode.org/reports/tr10/#Searching">8 Searching and Matching</a>, with collations and contractions formed per section <a href="http://unicode.org/reports/tr10/#Collation_Folding">8.1 Collation Folding</a>, and secondary strength asymmetric search per section <a href="http://unicode.org/reports/tr10/#Asymmetric_Search">8.2 Asymmetric Search</a>.
             </p>
 
             <p class="issue">
@@ -955,7 +955,7 @@
           The <code>target text</code> is then incrementally compared with the <a>search content</a>, within the tolerance of the specified <a href="#edit_distance">edit distance</a>. Each such operation is performed at the current <a>search cursor</a>x character, starting with the first character and proceeding to each subsequent character. If there is a match, the prefix and suffix strings are also tested against the surrounding text and within their respective specified <a href="#edit_distance">edit distance</a> tolerances. If this also matches, then the process stops and the return results are prepared. If no appropriate match is found, the cursor character is incremented by a single character until a match is found, or until the end of the <a>search content</a> is reached if the <code>wrap</code> attribute is set to false. If the <code>wrap</code> attribute is set to true, and the start position was not the 0 position of the <a>search content</a> string, the search only concludes when the start position has been reached.
         </p>
         <p>
-          The return results are prepared by first reconciling the matched string with its equivalent DOM range in the document. This range object is created, and bundled in an object with the original search parameters. This return object is in the form of a Promise, so the results can be analyzed and subsquent search operations can be performed by incrementing the start range position based on the matched range (if any). By performing this search multiple times, an application can incrementally find all matching ranges in the document.
+          The return results are prepared by first reconciling the matched string with its equivalent DOM range in the document. This range object is created, and bundled in an object with the original search parameters. This return object is in the form of a Promise, so the results can be analyzed and subsequent search operations can be performed by incrementing the start range position based on the matched range (if any). By performing this search multiple times, an application can incrementally find all matching ranges in the document.
         </p>
       </div>
 
