@@ -935,6 +935,9 @@
     <section>
       <h3>Performing a search operation</h3>
       <p>A conforming <a>user agent</a> MUST perform a search operation in a manner that produces results consistent with this following algorithm. A conforming <a>user agent</a> MAY optimize the search algorithm in any way that produces these consistent results.</p>
+      <p class="note">This algorithm is not intended to serve as pseudocode, and would not yeild performant results. The bitap algorithm or other efficient mechanism should be used instead, in a manner consistent with the results of this algorithm.</p>
+
+      <p class="issue">Should this algorithm take into account <i>transposed words</i>, where the prefix and suffix are different because of the transposition? For example, "The boat was filled the with fishing gear." Or, should this be handled at the application (webapp) level?</p>
 
       <div class='note'>
         <h4>Search Algorithm summary</h4>
@@ -1205,7 +1208,7 @@ The return results are prepared by first reconciling the matched string with its
           </ol>
         </li>
         <li>If <code>wholeWord</code> is <code>true</code>, halt this algorithm.</li>
-        <li>If <var>candidate text</var> and <code>text</code> match in a comparison using the <a href="edit_distance_algorithm">Calculating Edit Distance Algorithm</a>: 
+        <li>If <var>candidate text</var> and <code>text</code> match in a comparison using the <a href="#edit_distance_algorithm">Calculating Edit Distance Algorithm</a>: 
           <ol>
             <li>Set <var>match text</var> to <var>candidate text</var>.</li>
             <li>Return <var>match text</var> and halt this algorithm.</li>
